@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "140469949329",
+    "project_id": "namthanhstores",
+    "storage_bucket": "namthanhstores.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:140469949329:android:5fa52a0346351a2f9ec030",
+        "android_client_info": {
+          "package_name": "com.namthanhstore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "140469949329-le91qjaso1i8sj24649bb9qc7ld6h5eh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjlztkPY-jgejHrGDCzfDe2RJldRlQlrs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "140469949329-le91qjaso1i8sj24649bb9qc7ld6h5eh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
