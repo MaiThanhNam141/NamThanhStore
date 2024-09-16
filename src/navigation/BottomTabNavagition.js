@@ -16,18 +16,14 @@ const BottomTabNavigation = () => {
   return (
     <Tab.Navigator
       initialRouteName={'Home'}
-      tabBarPosition="bottom"
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarActiveTintColor: "blue",
+        tabBarActiveTintColor: "#16C318",
         tabBarInactiveTintColor: "gray",
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          borderTopLeftRadius: 10,
-          borderTopRightRadius: 10,
-          overflow: "hidden",
-          backgroundColor: "#fff",
+          backgroundColor: "#DEFFD3",
           height: 49,
         },
       }}

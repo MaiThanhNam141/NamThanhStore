@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput, Modal, Alert, View, Text, StyleSheet, TouchableOpacity, Image, ToastAndroid } from 'react-native';
+import { Modal, Alert, View, Text, StyleSheet, TouchableOpacity, Image, ToastAndroid, SafeAreaView } from 'react-native';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { getUserInfo, updateUserInfo } from '../context/FirebaseFunction';
-import auth from '@react-native-firebase/auth';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import ImagePicker from 'react-native-image-crop-picker';
 import storage from '@react-native-firebase/storage'
+import LinearGradient from 'react-native-linear-gradient';
+import LoadingScreen from '../data/LoadingScreen';
 
-const ProfileScreen = () => {
+const ProfileScreen = ({navigation}) => {
   const [user, setUser] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [newInfo, setNewInfo] = useState('');
   const [refresh, setRefresh] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [modalNotificationVisible, setModalNotificationVisible] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -32,16 +31,6 @@ const ProfileScreen = () => {
       fetchUser();
     }
   }, [refresh]);
-  const handleSignOut = () => {
-    Alert.alert(
-      'Xác nhận',
-      'Bạn có chắc chắn muốn đăng xuất không?',
-      [
-        { text: 'Hủy', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
-        { text: 'Thoát', onPress: signOut },
-      ],
-    );
-  };
   const handleUpload = () => {
     Alert.alert(
       'Xác nhận',
@@ -121,195 +110,165 @@ const ProfileScreen = () => {
       console.log("Upload Image ", error);
     }
   }
-  const saveNewInfo = () => {
-    setModalVisible(true);
-    try {
-      const name = newInfo.trim();
-      if (name.length > 5)
-        updateUserInfo({ displayName: name });
-      setRefresh(true);
-    } catch (error) {
-      console.error("Save new Info error: ", error);
-      ToastAndroid.show("Cập nhật thất bại", ToastAndroid.SHORT);
-    } finally {
-      setRefresh(true);
-      setNewInfo('')
-    }
-  }
-
-  const signOut = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([
-        GoogleSignin.signOut(),
-        auth().signOut(),
-      ])
-    } catch (error) {
-      console.error("signOut: ", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text>Đang tải...</Text>
-      </View>
+      <LoadingScreen />
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleUpload} style={{ borderWidth: 1, width: 80, borderRadius: 100 }}>
-          <Image source={{ uri: user?.photoURL || 'https://www.transparentpng.com/download/user/gray-user-profile-icon-png-fP8Q1P.png' }} style={styles.avatar} />
-          <MaterialIcons name="edit" size={24} color="#000" style={{ position: 'absolute', right: 0, top: 0 }} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={saveNewInfo}>
-          <Text style={styles.name}>{user?.displayName || 'Tên người dùng'} <MaterialIcons name="edit" size={24} color="#333" /></Text>
-        </TouchableOpacity>
-        <Text style={styles.email}>{user?.email || 'Email'}</Text>
+        <Text style={{ fontWeight: 'bold', fontSize: 30, color: '#000', flex: 3 }}>Profile</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flex: 2 }}>
+          <MaterialIcons name="shopping-cart" size={24} color="#333" onPress={() => navigation.navigate('cart')} />
+          <MaterialIcons name="notifications" size={24} color="#333" onPress={() => setModalNotificationVisible(true)} />
+          <MaterialIcons name="settings" size={24} color="#333" onPress={() => navigation.navigate('setting', {user: user})} />
+        </View>
       </View>
-      <View style={styles.menu}>
-        <TouchableOpacity style={styles.menuItem}>
-          <MaterialIcons name="shopping-cart" size={24} color="#333" />
-          <Text style={styles.menuText}>Xem giỏ hàng</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
-          <MaterialIcons name="list-alt" size={24} color="#333" />
-          <Text style={styles.menuText}>Xem đơn hàng</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem}>
-          <MaterialIcons name="info" size={24} color="#333" />
-          <Text style={styles.menuText}>Về chúng tôi</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
-          <MaterialIcons name="exit-to-app" size={24} color="#333" />
-          <Text style={styles.menuText}>Đăng xuất</Text>
-        </TouchableOpacity>
-      </View>
-      <Modal transparent={true} animationType={'slide'} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-        <View style={styles.alertContainer}>
-          <View style={styles.alertBox}>
-            <Text style={styles.alertText}>Sửa tên hiển thị</Text>
-            <TextInput
-              value={newInfo}
-              onChangeText={(text) => setNewInfo(text)}
-              placeholderTextColor={"gray"}
-              style={styles.textInput}
-              spellCheck={false}
-              autoCorrect={false}
-              autoCapitalize={false}
-            >
-            </TextInput>
-            <View style={styles.alertButtons}>
-              <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.buttonContainer, { backgroundColor: '#fff' }]}>
-                <Text style={[styles.confirmButtonText, { color: 'black' }]}>Hủy</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => saveNewInfo()} style={styles.buttonContainer}>
-                <Text style={styles.confirmButtonText}>Đồng ý</Text>
-              </TouchableOpacity>
+      <View style={{ flex: 1, backgroundColor: '#DEFFD3' }} />
+      <LinearGradient style={styles.container} colors={['#f7f7f7', '#DEFFD3']}>
+        <View style={styles.user}>
+          <TouchableOpacity onPress={handleUpload} style={{ borderRadius: 100, borderWidth: 6, borderColor: '#fff', alignItems: 'center' }}>
+            <Image source={{ uri: user?.photoURL || 'https://www.transparentpng.com/download/user/gray-user-profile-icon-png-fP8Q1P.png' }} style={styles.avatar} />
+            <MaterialIcons name="edit" size={28} color="#0f0f0f" style={{ position: 'absolute', right: 0, top: 0 }} />
+          </TouchableOpacity>
+          <Text style={styles.name}>{user?.displayName || 'Tên người dùng'}</Text>
+        </View>
+        <View style={styles.uilities}>
+          <View style={styles.uilitiesRow}>
+            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopRightRadius: 40, borderBottomRightRadius: 40 }]}>
+              <MaterialIcons name="system-security-update" size={50} color="#333" />
+              <Text>Chờ xác nhận</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopLeftRadius: 40, borderBottomLeftRadius: 40 }]}>
+              <MaterialIcons name="shopping-cart-checkout" size={50} color="#333" />
+              <Text>Chờ lấy hàng</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.uilitiesRow}>
+            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopRightRadius: 40, borderBottomRightRadius: 40 }]}>
+              <MaterialIcons name="local-shipping" size={50} color="#333" />
+              <Text>Chờ giao hàng</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopLeftRadius: 40, borderBottomLeftRadius: 40 }]}>
+              <MaterialIcons name="new-releases" size={50} color="#333" />
+              <Text>Đáng giá</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </LinearGradient>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalNotificationVisible}
+        onRequestClose={() => setModalNotificationVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Thông báo</Text>
+            <View style={styles.dividerModal} />
+            <View style={{ alignItems: 'center', }}>
+              <Text style={styles.notificationText}>Bạn chưa có thông báo nào</Text>
             </View>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalNotificationVisible(false)}
+            >
+              <MaterialIcons name="close" size={25} color="#333" />
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
 export default ProfileScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   header: {
-    padding: 20,
-    backgroundColor: '#f7f7f7',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 10,
+    backgroundColor: '#DEFFD3'
+  },
+  container: {
+    flex: 8,
+    alignItems: 'center',
+  },
+  user: {
+    alignItems: 'center',
+    marginTop: '-15%'
   },
   avatar: {
-    width: 80,
-    height: 80,
-    resizeMode: 'contain',
-    borderRadius: 100,
+    width: 110,
+    height: 110,
+    resizeMode: 'cover',
   },
   name: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    marginTop: 10,
+    fontSize: 25,
+    color: '#a0a0a0',
+    fontWeight: '600'
   },
-  email: {
-    fontSize: 16,
-    color: '#666',
+  uilities: {
+    marginTop: 50,
+    width: "100%",
+    height: "60%",
+    justifyContent: 'space-evenly'
   },
-  menu: {
-    padding: 20,
-  },
-  menuItem: {
+  uilitiesRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  uilitiesBtn: {
+    width: "47%",
+    borderWidth: 0,
+    borderColor: 'blue',
     alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    paddingVertical: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 100,
+    elevation: 5,
+    backgroundColor: '#DEFFD3'
   },
-  menuText: {
-    fontSize: 16,
-    marginLeft: 10,
-  },
-  alertContainer: {
+  modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
-  alertBox: {
-    backgroundColor: 'white',
-    padding: 15,
-    paddingVertical: 40,
-    borderRadius: 30,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 340,
-    height: 300,
-    justifyContent: 'space-around'
+  modalContent: {
+    backgroundColor: '#fff',
+    width: '85%',
+    borderRadius: 10,
+    padding: 20,
   },
-  alertText: {
-    fontSize: 18,
-    marginBottom: 20,
+  modalTitle: {
+    fontSize: 21,
+    fontWeight: 'bold',
+    marginBottom: 10,
     textAlign: 'center',
-    color: 'black',
+    color: '#202020',
   },
-  alertButtons: {
-    flexDirection: 'row',
+  dividerModal: {
+    backgroundColor: '#333',
+    height: 1,
+    marginBottom: 10,
   },
-  confirmButtonText: {
+  notificationText: {
     fontSize: 16,
-    color: 'white',
-    paddingHorizontal: 20,
-    fontWeight: '500'
+    color: '#333',
   },
-  buttonContainer: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 15,
-    marginHorizontal: 20,
-    padding: 15,
-    alignItems:'center',
-    textAlign:'center',
-    justifyContent: 'center',
-    backgroundColor: 'red',
-    borderColor:'black'
-  },
-  textInput:{
-    color: "gray",
-    fontSize: 14,
-    width:270,
-    textAlignVertical:'center',
-    borderWidth:1,
-    borderRadius:15,
-    marginBottom:5,
-    borderColor:'black'
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
 });

@@ -6,6 +6,10 @@ import LoginScreen from "../screen/LoginScreen";
 import ChatBotScreen from "../screen/ChatBotScreen";
 import SearchScreen from "../screen/SearchScreen";
 import { UserContext } from "../context/UserContext";
+import Setting from "../component/Setting";
+import Cart from "../component/Cart";
+import About from "../component/About";
+import UserInfo from "../component/UserInfo";
 
 const Stack = createStackNavigator()
 
@@ -42,6 +46,11 @@ const ProfileStackNavigator = () =>{
             ) : (
                 <Stack.Screen name="loginscreen" component={LoginScreen} />
             )}
+            <Stack.Screen name="setting" component={Setting} />
+            <Stack.Screen name="cart" component={Cart} />
+            <Stack.Screen name="about" component={About} />
+            <Stack.Screen name="userinfo" component={UserInfo} />
+
         </Stack.Navigator>
     )
 }

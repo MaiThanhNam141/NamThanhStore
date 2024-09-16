@@ -1,11 +1,26 @@
-import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import React, {useState} from 'react';
+import { Text, View, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import SkeletonPost from '../data/SkeletonPost';
+import LoadingScreen from '../data/LoadingScreen';
 
 const HomeScreen = () => {
+    const [loading, setLoading] = useState(true);
+
+    if (loading) {
+        return (
+            <ScrollView style={{flex:1, backgroundColor:'#ffffff'}}>
+                <SkeletonPost />
+                <SkeletonPost />
+                <SkeletonPost />
+            </ScrollView>
+        )
+    }
+
+
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text>HomeScreen</Text>
-        </View>
+        </SafeAreaView>
     );
 };
 
