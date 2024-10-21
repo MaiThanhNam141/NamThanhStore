@@ -24,6 +24,7 @@ const MainStackNavigator = () =>{
                 gestureDirection:"horizontal",
             }}>
             <Stack.Screen name="homescreen" component={HomeScreen}/>
+            <Stack.Screen name="cart" component={Cart} />
         </Stack.Navigator>
     )
 }

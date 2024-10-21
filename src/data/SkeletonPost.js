@@ -4,20 +4,22 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
 const SkeletonPost = () => {
   return (
-    <SkeletonPlaceholder contentContainerStyle={{ backgroundColor: '#ffffff' }}>
+    <SkeletonPlaceholder>
       <View style={styles.skeletonContainer}>
-        <View style={styles.productColumn}>
-          <View style={styles.productImagePlaceholder} />
-          <View style={styles.textBlock}>
-            <View style={styles.productNamePlaceholder} />
-            <View style={styles.productPricePlaceholder} />
+        <View style={styles.productRow}>
+          <View style={styles.productColumn}>
+            <View style={styles.productImagePlaceholder} />
+            <View style={styles.textBlock}>
+              <View style={styles.productNamePlaceholder} />
+              <View style={styles.productPricePlaceholder} />
+            </View>
           </View>
-        </View>
-        <View style={styles.productColumn}>
-          <View style={styles.productImagePlaceholder} />
-          <View style={styles.textBlock}>
-            <View style={styles.productNamePlaceholder} />
-            <View style={styles.productPricePlaceholder} />
+          <View style={styles.productColumn}>
+            <View style={styles.productImagePlaceholder} />
+            <View style={styles.textBlock}>
+              <View style={styles.productNamePlaceholder} />
+              <View style={styles.productPricePlaceholder} />
+            </View>
           </View>
         </View>
       </View>
@@ -33,6 +35,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 10,
     paddingBottom: 15,
+  },
+  productRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
   productColumn: {
     flex: 1,
