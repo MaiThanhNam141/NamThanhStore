@@ -7,7 +7,7 @@ import { PanGestureHandler } from 'react-native-gesture-handler';
 import { emptyCart } from '../data/AssetsRef';
 
 const Cart = ({ navigation }) => {
-    const { cartItems, removeItemFromCart, clearCart, addItemToCart, subtractItemsFromCart } = useContext(CartContext);
+    const { cartCount, cartItems, removeItemFromCart, clearCart, addItemToCart, subtractItemsFromCart } = useContext(CartContext);
     const [selectedItems, setSelectedItems] = useState([]);
 
     const translateX = useRef(new Animated.Value(0)).current;
@@ -153,7 +153,7 @@ const Cart = ({ navigation }) => {
                 />
             )}
             {
-                selectedItems.length > 0 && (
+                cartCount > 0 && selectedItems.length > 0 && (
                     <View style={styles.totalPriceCard}>
                         <View style={styles.totalPriceCardItem}>
                             <Text style={styles.totalPriceCardTitle}>Tổng số lượng:</Text>
