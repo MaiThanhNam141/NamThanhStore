@@ -31,6 +31,10 @@ const ProfileScreen = ({navigation}) => {
       fetchUser();
     }
   }, [refresh]);
+
+  const onRefresh = () => {
+    setRefresh(true);
+  }
   const handleUpload = () => {
     Alert.alert(
       'Xác nhận',
@@ -124,7 +128,7 @@ const ProfileScreen = ({navigation}) => {
         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flex: 2 }}>
           <MaterialIcons name="shopping-cart" size={24} color="#333" onPress={() => navigation.navigate('cart')} />
           <MaterialIcons name="notifications" size={24} color="#333" onPress={() => setModalNotificationVisible(true)} />
-          <MaterialIcons name="settings" size={24} color="#333" onPress={() => navigation.navigate('setting', {user: user})} />
+          <MaterialIcons name="settings" size={24} color="#333" onPress={() => navigation.navigate('setting', {user: user, onRefresh})} />
         </View>
       </View>
       <View style={{ flex: 1, backgroundColor: '#DEFFD3' }} />

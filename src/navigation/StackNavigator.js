@@ -10,6 +10,7 @@ import Setting from "../component/Setting";
 import Cart from "../component/Cart";
 import About from "../component/About";
 import UserInfo from "../component/UserInfo";
+import Payment from "../component/Payment";
 
 const Stack = createStackNavigator()
 
@@ -25,6 +26,7 @@ const MainStackNavigator = () =>{
             }}>
             <Stack.Screen name="homescreen" component={HomeScreen}/>
             <Stack.Screen name="cart" component={Cart} />
+            <Stack.Screen name="payment" component={Payment} />
         </Stack.Navigator>
     )
 }
@@ -51,7 +53,7 @@ const ProfileStackNavigator = () =>{
             <Stack.Screen name="cart" component={Cart} />
             <Stack.Screen name="about" component={About} />
             <Stack.Screen name="userinfo" component={UserInfo} />
-
+            <Stack.Screen name="payment" component={Payment} />
         </Stack.Navigator>
     )
 }

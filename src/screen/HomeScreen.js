@@ -1,11 +1,14 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { Text, View, StyleSheet, SafeAreaView, TouchableOpacity, Image, Animated, Dimensions, FlatList, RefreshControl, ScrollView, ActivityIndicator, ToastAndroid } from 'react-native';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
+import { Easing, Text, View, StyleSheet, SafeAreaView, TouchableOpacity, Image, Animated, Dimensions, FlatList, RefreshControl, ScrollView, ActivityIndicator, ToastAndroid } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { logo } from '../data/AssetsRef';
 import SkeletonPost from '../data/SkeletonPost';
 import ImageViewing from 'react-native-image-viewing';
 import firestore from '@react-native-firebase/firestore';
 import { CartContext } from '../context/CartContext';
+import RenderSliderImage from '../component/RenderSliderImage';
+import { getDocumentRef } from '../context/FirebaseFunction';
+
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
@@ -22,11 +25,39 @@ const HomeScreen = ({ navigation }) => {
   const [filterProduct, setFilterProduct] = useState([]);
   const [translateX] = useState(new Animated.Value(-width * 0.75));
   const [cartAnimation] = useState(new Animated.Value(1));
-
+  const [sliderImages, setSliderImages] = useState({ imageUrls: [], links: [] });
   const { addItemToCart, cartCount } = useContext(CartContext);
+  const [isSliderVisible, setIsSliderVisible] = useState(true);
+  const [height, setHeight] = useState(200);
+
+  const [scrollY] = useState(new Animated.Value(0));
+
+  const scale = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [1, 0.5],
+    extrapolate: 'clamp',
+    easing: Easing.linear
+  });
+
+  const opacity = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+    easing: Easing.linear
+  });
+
+  const left = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [0, -200],
+    extrapolate: 'clamp',
+    easing: Easing.linear
+  });
 
   useEffect(() => {
-    fetchPosts();
+    Promise.all([
+      fetchPosts(),
+      fetchSliderImages()
+    ])
   }, []);
 
   useEffect(() => {
@@ -41,6 +72,22 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  useEffect(() => {
+    const listener = scrollY.addListener(({ value }) => {
+      if (value >= 200) {
+        setIsSliderVisible(false); // Ẩn RenderSliderImage
+        setHeight(0);
+      } else if (value < 200) {
+        setIsSliderVisible(true); // Hiện lại RenderSliderImage
+        setHeight(200);
+      }
+    });
+
+    return () => {
+      scrollY.removeListener(listener); // Dọn dẹp listener khi component unmount
+    };
+  }, [isSliderVisible]);
+
   const handleImagePress = (imageUri) => {
     setImages([{ uri: imageUri }]);
     setVisible(true);
@@ -52,16 +99,18 @@ const HomeScreen = ({ navigation }) => {
 
   const handleAddToCart = (item) => {
     addItemToCart(item);
-    
+
     Animated.sequence([
       Animated.timing(cartAnimation, {
         toValue: 1.3,
         duration: 200,
+        friction: 3,
         useNativeDriver: true,
       }),
       Animated.timing(cartAnimation, {
         toValue: 1,
         duration: 200,
+        friction: 3,
         useNativeDriver: true,
       }),
     ]).start();
@@ -72,7 +121,8 @@ const HomeScreen = ({ navigation }) => {
     Animated.timing(translateX, {
       toValue,
       duration: 300,
-      useNativeDriver: false,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
     }).start();
     setMenuVisible(!menuVisible);
   };
@@ -92,6 +142,20 @@ const HomeScreen = ({ navigation }) => {
   const handleCart = () => {
     navigation.navigate('cart')
   }
+
+  const fetchSliderImages = useCallback(async () => {
+    try {
+      const snapshot = await getDocumentRef('SliderImages');
+      if (snapshot) {
+        const images = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const imageUrls = images.map(image => image.urlImages);
+        const links = images.map(image => image.link);
+        setSliderImages({ imageUrls, links });
+      }
+    } catch (error) {
+      console.error("HomeScreen: Lỗi khi fetch slider images:", error);
+    }
+  }, []);
 
   const fetchPosts = async () => {
     try {
@@ -157,7 +221,7 @@ const HomeScreen = ({ navigation }) => {
       setFilterProduct([]);
       setSelectedAnimal(null);
       toggleMenu()
-      return ;
+      return;
     }
     setSelectedAnimal(selected);
     const newProduct = product.filter((item) => item.animal === selected);
@@ -168,7 +232,7 @@ const HomeScreen = ({ navigation }) => {
   const renderMenu = () => {
     return (
       <Animated.View style={[styles.menuContainer, { transform: [{ translateX }] }]}>
-        <View style={{ padding: 20}}>
+        <View style={{ padding: 20 }}>
           <TouchableOpacity style={styles.menuItem} onPress={toggleSubMenu}>
             <Text style={styles.menuText}>Thể loại</Text>
           </TouchableOpacity>
@@ -210,16 +274,20 @@ const HomeScreen = ({ navigation }) => {
   const renderProductHome = () => {
     return (
       <FlatList
-        data={ selectedAnimal ? filterProduct : product }
+        data={selectedAnimal ? filterProduct : product}
         keyExtractor={(item) => item.id}
         renderItem={renderProduct}
         numColumns={2}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         onEndReached={handleScroll}
         onEndReachedThreshold={0.1}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
         ListFooterComponent={() => (loading ? <ActivityIndicator size="small" /> : null)}
       />
-    );
+    )
   };
 
   if (initialLoading) {
@@ -238,8 +306,8 @@ const HomeScreen = ({ navigation }) => {
         <TouchableOpacity onPress={toggleMenu}>
           <MaterialIcons name="menu" size={30} color="#000000" />
         </TouchableOpacity>
-        <View style={{ flexDirection:'row', alignItems:'center'}}>
-          <TouchableOpacity style={{ paddingHorizontal: 10}} onPress={handleCart}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity style={{ paddingHorizontal: 10 }} onPress={handleCart}>
             <Animated.View style={{ transform: [{ scale: cartAnimation }] }}>
               <MaterialIcons name="shopping-cart" size={30} color="#000" />
               {cartCount > 0 && (
@@ -253,6 +321,11 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </View>
       {renderMenu()}
+      {isSliderVisible && selectedAnimal === null && (
+        <Animated.View style={[styles.renderImage, { height: height, transform: [{ scale }], opacity, left }]}>
+          <RenderSliderImage images={sliderImages.imageUrls} links={sliderImages.links} />
+        </Animated.View>
+      )}
       {renderProductHome()}
       <ImageViewing images={images} visible={visible} onRequestClose={handleImageViewingClose} />
     </SafeAreaView>
@@ -394,4 +467,9 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
   },
+  renderImage: {
+    alignSelf: 'center',
+    marginTop: 5,
+    borderRadius: 20,
+  }
 });

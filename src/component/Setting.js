@@ -6,7 +6,7 @@ import LoadingScreen from '../data/LoadingScreen';
 import { updateUserInfo } from '../context/FirebaseFunction';
 
 const Setting = ({ navigation, route }) => {
-    const user = route.params.user;
+    const { user, onRefresh } = route.params;
     const [isEnabledNotification, setIsEnabledNotification] = useState('notification' in route.params.user ? route.params.user.notification : true);
     const [isEnabledAIVoice, setIsEnabledAIVoice] = useState('voice' in route.params.user ? route.params.user.voice : true);
     const [loading, setLoading] = useState(true);
@@ -21,6 +21,12 @@ const Setting = ({ navigation, route }) => {
             ],
         );
     };
+
+    const refresh = () => {
+        if (onRefresh) {
+            onRefresh();
+        }
+    }
 
     const signOut = async () => {
         setLoading(true);
@@ -45,7 +51,8 @@ const Setting = ({ navigation, route }) => {
     const handleNotification = () => {
         try {
             setIsEnabledNotification(!isEnabledNotification);
-            updateUserInfo({ notification: !isEnabledNotification })
+            updateUserInfo({ notification: !isEnabledNotification });
+            refresh();
         } catch (error) {
             console.error();
         }
@@ -54,7 +61,8 @@ const Setting = ({ navigation, route }) => {
     const handleAIVoice = () => {
         try {
             setIsEnabledAIVoice(!isEnabledAIVoice)
-            updateUserInfo({ voice: !isEnabledAIVoice })
+            updateUserInfo({ voice: !isEnabledAIVoice });
+            refresh();
         } catch (error) {
             console.error();
         }
@@ -78,7 +86,7 @@ const Setting = ({ navigation, route }) => {
                 </View>
             </View>
             <LinearGradient style={styles.container} colors={['#f7f7f7', '#DEFFD3']}>
-                <TouchableOpacity style={[styles.utilities, { paddingVertical: 30 }]} onPress={() => navigation.navigate('userinfo')}>
+                <TouchableOpacity style={[styles.utilities, { paddingVertical: 30 }]} onPress={() => navigation.navigate('userinfo', {user: user, onRefresh})}>
                     <MaterialIcons name="person" size={50} style={{ flex: 1, marginLeft: 10 }} />
                     <View style={{ flex: 6 }}>
                         <Text style={styles.utilitiesText}>Tài khoản</Text>
