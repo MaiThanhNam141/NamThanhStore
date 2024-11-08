@@ -4,6 +4,7 @@ const CryptoJS = require('crypto-js');
 const moment = require('moment');
 const qs = require('qs');
 const admin = require('firebase-admin');
+
 admin.initializeApp();
 
 // APP INFO
@@ -35,6 +36,7 @@ exports.createPayment = functions.https.onRequest(async (req, res) => {
         email: JSON.stringify(email),
         address: JSON.stringify(address),
         embed_data: JSON.stringify(embed_data),
+        status: "Pending",
         amount: amount,
         callback_url: 'https://us-central1-namthanhstores.cloudfunctions.net/paymentCallback',
         description: `Payment for the order #${transID}`,

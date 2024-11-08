@@ -124,7 +124,7 @@ const ProfileScreen = ({navigation}) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.header}>
-        <Text style={{ fontWeight: 'bold', fontSize: 30, color: '#000', flex: 3 }}>Profile</Text>
+        <Text style={{ fontWeight: 'bold', fontSize: 30, color: '#000', flex: 3 }}>Hồ sơ</Text>
         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flex: 2 }}>
           <MaterialIcons name="shopping-cart" size={24} color="#333" onPress={() => navigation.navigate('cart')} />
           <MaterialIcons name="notifications" size={24} color="#333" onPress={() => setModalNotificationVisible(true)} />

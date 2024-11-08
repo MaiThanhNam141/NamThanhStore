@@ -45,7 +45,7 @@ const BottomTabNavigation = () => {
       <Tab.Screen name='AI' component={ChatBotStackNavigator}
         options={{
           tabBarIcon: ({ color }) => (
-            <MaterialIcons name="smart-toy" size={25} color={color} />
+            <MaterialIcons name="contact-support" size={25} color={color} />
           )
         }}
       />

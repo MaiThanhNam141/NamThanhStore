@@ -1,8 +1,7 @@
 import React, { useContext, useState, useRef } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, FlatList, Image, Animated } from 'react-native';
-import CheckBox from '@react-native-community/checkbox'; // Updated import
+import { Text, View, StyleSheet, TouchableOpacity, FlatList, Image, Animated, Easing } from 'react-native';
+import CheckBox from '@react-native-community/checkbox';
 import { CartContext } from '../context/CartContext';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import { emptyCart } from '../data/AssetsRef';
 
@@ -10,27 +9,24 @@ const Cart = ({ navigation }) => {
     const { cartCount, cartItems, removeItemFromCart, clearCart, addItemToCart, subtractItemsFromCart } = useContext(CartContext);
     const [selectedItems, setSelectedItems] = useState([]);
 
-    const translateX = useRef(new Animated.Value(0)).current;
+    const translateX = useRef(
+        cartItems.map(() => new Animated.Value(0))
+    ).current;
 
-    const handleGestureEvent = Animated.event(
-        [{ nativeEvent: { translationX: translateX } }],
+    const handleGestureEvent = (index) => Animated.event(
+        [{ nativeEvent: { translationX: translateX[index] } }],
         { useNativeDriver: true }
     );
 
-    const handleGestureEnd = () => {
-        if (translateX._value < -100) {
-            // Trigger removal when swiped past -100px
-            removeItemFromCart(item.id);
-        } else {
-            // Snap back if not swiped far enough
-            Animated.spring(translateX, {
-                toValue: 0,
-                useNativeDriver: true
-            }).start();
-        }
+    const handleGestureEnd = (index) => {
+        Animated.spring(translateX[index], {
+            toValue: 0,
+            useNativeDriver: true,
+            easing: Easing.bounce,
+        }).start();
     };
 
-    // Group items by id and calculate quantity
+    // Nhóm các mục trong giỏ hàng theo id và tính toán số lượng
     const groupedItems = cartItems.reduce((acc, item) => {
         const existingItem = acc.find((i) => i.id === item.id);
         if (existingItem) {
@@ -62,38 +58,49 @@ const Cart = ({ navigation }) => {
             removeItemFromCart(item.id);
         }
     };
-    const handleRemoveItem = (item) => {
-        removeItemFromCart(item.id);
-    }
 
+
+    // Chọn hoặc bỏ chọn một mục trong giỏ hàng
     const toggleItemSelection = (item) => {
-        if (selectedItems.includes(item.id)) {
-            setSelectedItems(selectedItems.filter(id => id !== item.id));
+        const itemExists = selectedItems.find(selectedItem => selectedItem.id === item.id);
+        if (itemExists) {
+            // Nếu sản phẩm đã có trong danh sách được chọn, loại bỏ nó
+            setSelectedItems(selectedItems.filter(selectedItem => selectedItem.id !== item.id));
         } else {
-            setSelectedItems([...selectedItems, item.id]);
+            // Nếu sản phẩm chưa có trong danh sách được chọn, thêm vào với số lượng hiện tại
+            setSelectedItems([...selectedItems, { id: item.id, itemCount: item.quantity }]);
         }
     };
+
     const formatNumberWithDots = (number) => {
         return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     };
 
-    const totalQuantity = selectedItems.reduce((acc, itemId) => {
-        const item = groupedItems.find((i) => i.id === itemId);
-        return acc + item?.quantity || 0;
+    // Tính tổng số lượng các mục được chọn trong giỏ hàng
+    const totalQuantity = selectedItems.reduce((acc, selectedItem) => {
+        return acc + selectedItem.itemCount;
     }, 0);
 
-    const totalPrice = selectedItems.reduce((acc, itemId) => {
-        const item = groupedItems.find((i) => i.id === itemId);
-        return acc + item?.price * item?.quantity;
+
+    // Tính tổng giá hàng của các mục được chọn trong giỏ hàng
+    const totalPrice = selectedItems.reduce((acc, selectedItem) => {
+        const item = groupedItems.find(i => i.id === selectedItem.id);
+        return acc + (item?.price || 0) * selectedItem.itemCount;
     }, 0);
 
-    const renderItem = ({ item }) => {
+    const handlePayment = () => {
+        navigation.navigate("payment", { selectedItems, totalPrice, totalQuantity })
+    }
 
+    const renderItem = ({ item, index }) => {
         return (
-            <PanGestureHandler onGestureEvent={handleGestureEvent} onEnded={handleGestureEnd}>
-                <Animated.View style={[styles.cartItem, { transform: [{ translateX }] }]}>
+            <PanGestureHandler
+                onGestureEvent={handleGestureEvent(index)}
+                onEnded={() => handleGestureEnd(index)}
+            >
+                <Animated.View style={[styles.cartItem, { transform: [{ translateX: translateX[index] }] }]}>
                     <CheckBox
-                        value={selectedItems.includes(item.id)}
+                        value={selectedItems.some(selectedItem => selectedItem.id === item.id)}
                         onValueChange={() => toggleItemSelection(item)}
                     />
                     <Image source={{ uri: item.image }} style={styles.productImage} />
@@ -110,16 +117,6 @@ const Cart = ({ navigation }) => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <Animated.View
-                        style={[styles.removeIcon, {
-                            opacity: translateX.interpolate({
-                                inputRange: [-100, 0],
-                                outputRange: [1, 0],
-                            })
-                        }]}
-                    >
-                        <MaterialIcons name="remove" size={24} color="red" onPress={() => handleRemoveItem(item.id)} />
-                    </Animated.View>
                 </Animated.View>
             </PanGestureHandler>
         );
@@ -140,7 +137,7 @@ const Cart = ({ navigation }) => {
             {groupedItems.length === 0 ? (
                 <View style={{ alignItems: 'center' }}>
                     <Text>Giỏ hàng trống...</Text>
-                    <Image source={emptyCart} style={{height: 150, width: 150}} />
+                    <Image source={emptyCart} style={{ height: 150, width: 150 }} />
                     <TouchableOpacity style={[styles.totalPriceCardCheckout, { marginTop: 20 }]} onPress={() => navigation.goBack()}>
                         <Text style={styles.totalPriceCardText}>Tiếp tục mua sắm</Text>
                     </TouchableOpacity>
@@ -163,7 +160,7 @@ const Cart = ({ navigation }) => {
                             <Text style={styles.totalPriceCardTitle}>Giá tiền:</Text>
                             <Text style={styles.totalPriceCardText}>{formatNumberWithDots(totalPrice)} vnđ</Text>
                         </View>
-                        <TouchableOpacity style={styles.totalPriceCardCheckout}>
+                        <TouchableOpacity style={styles.totalPriceCardCheckout} onPress={handlePayment}>
                             <Text style={{ color: ' white', fontSize: 20 }}>Thanh toán</Text>
                         </TouchableOpacity>
                     </View>
@@ -254,5 +251,5 @@ const styles = StyleSheet.create({
         height: 40,
         justifyContent: 'center',
         alignItems: 'center'
-    }
+    },
 });

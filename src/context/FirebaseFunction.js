@@ -44,3 +44,19 @@ export const updateUserInfo = (userDocData) => {
         console.error("Firebase setUserInfo: ", error);
     }
 }
+
+export const fetchItemsCheckout = async (selectedItems) => {
+    try {
+        const items = await Promise.all(
+            selectedItems.map(async (selectedItem) => {
+                const doc = await firestore().collection('productFood').doc(selectedItem.id.toString()).get();
+                return { id: doc.id, ...doc.data() };
+            })
+        );
+
+        return items
+    } catch (error) {
+        console.error("Fetch items checkout error: ", error);
+        ToastAndroid.show("Không thể lấy thông tin sản phẩm", ToastAndroid.SHORT);
+    }
+};

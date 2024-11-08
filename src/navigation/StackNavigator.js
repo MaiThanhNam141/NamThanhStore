@@ -11,6 +11,7 @@ import Cart from "../component/Cart";
 import About from "../component/About";
 import UserInfo from "../component/UserInfo";
 import Payment from "../component/Payment";
+import DetailScreen from "../component/DetailScreen";
 
 const Stack = createStackNavigator()
 
@@ -27,6 +28,9 @@ const MainStackNavigator = () =>{
             <Stack.Screen name="homescreen" component={HomeScreen}/>
             <Stack.Screen name="cart" component={Cart} />
             <Stack.Screen name="payment" component={Payment} />
+            <Stack.Screen name="loginscreen" component={LoginScreen} />
+            <Stack.Screen name="userinfo" component={UserInfo} />
+            <Stack.Screen name="detail" component={DetailScreen} />
         </Stack.Navigator>
     )
 }

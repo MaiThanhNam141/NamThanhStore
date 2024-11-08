@@ -7,7 +7,6 @@ export const UserProvider = ({ children }) => {
     const [userExist, setUserExist] = useState('');
     const [loading, setLoading] = useState(true);
 
-
     useEffect(() => {
         try {
             const unsubscribe = auth().onAuthStateChanged(user => {

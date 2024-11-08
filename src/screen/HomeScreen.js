@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext, useCallback } from 'react';
-import { Easing, Text, View, StyleSheet, SafeAreaView, TouchableOpacity, Image, Animated, Dimensions, FlatList, RefreshControl, ScrollView, ActivityIndicator, ToastAndroid } from 'react-native';
+import { Easing, Text, View, StyleSheet, SafeAreaView, TouchableOpacity, Image, Animated, Dimensions, FlatList, RefreshControl, ScrollView, ActivityIndicator } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { logo } from '../data/AssetsRef';
 import SkeletonPost from '../data/SkeletonPost';
@@ -29,6 +29,7 @@ const HomeScreen = ({ navigation }) => {
   const { addItemToCart, cartCount } = useContext(CartContext);
   const [isSliderVisible, setIsSliderVisible] = useState(true);
   const [height, setHeight] = useState(200);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const [scrollY] = useState(new Animated.Value(0));
 
@@ -162,7 +163,7 @@ const HomeScreen = ({ navigation }) => {
       if (loading) return;
       setLoading(true);
       const productRef = firestore().collection('productFood');
-      let query = productRef.orderBy('id', 'desc').limit(6);
+      let query = productRef.limit(6);
       if (lastDoc) {
         query = query.startAfter(lastDoc);
       }
@@ -188,6 +189,10 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const handleDetailScreen = (item) => {
+    navigation.navigate('detail', { selectedItem: item })
+  }
+
   const renderProduct = ({ item }) => {
     const isDiscount = item.discount > 0;
 
@@ -197,7 +202,9 @@ const HomeScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => handleImagePress(item.image)}>
           <Image source={{ uri: item.image }} style={styles.productImage} />
         </TouchableOpacity>
-        <Text style={styles.productName}>{item.name}</Text>
+        <TouchableOpacity onPress={() => handleDetailScreen(item)}>
+          <Text style={styles.productName}>{item.name}</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.priceButton} onPress={() => handleAddToCart(item)}>
           {isDiscount ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
@@ -286,6 +293,7 @@ const HomeScreen = ({ navigation }) => {
           { useNativeDriver: false }
         )}
         ListFooterComponent={() => (loading ? <ActivityIndicator size="small" /> : null)}
+        ListEmptyComponent={() => <Text style={{ alignSelf: 'center', fontWeight: 'bold', fontSize: 20 }}>Đã có lỗi nào đó xảy ra</Text>}
       />
     )
   };
@@ -471,5 +479,18 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 5,
     borderRadius: 20,
-  }
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    width: '90%',
+    height: '95%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+  },
 });
