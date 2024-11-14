@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, View, StyleSheet, TouchableOpacity, Alert, ToastAndroid, Image, TextInput } from 'react-native';
+import { Linking, ScrollView, Text, View, StyleSheet, TouchableOpacity, Alert, ToastAndroid, Image, TextInput, ActivityIndicator } from 'react-native';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { fetchItemsCheckout, getUserInfo } from '../context/FirebaseFunction';
+import { fetchItemsCheckout, getCurrentUser, getUserInfo } from '../context/FirebaseFunction';
 import { Picker } from '@react-native-picker/picker';
 
 const Payment = ({ navigation, route }) => {
@@ -66,14 +66,68 @@ const Payment = ({ navigation, route }) => {
 
     const handleLogin = () => navigation.navigate('loginscreen');
 
+    const handlePayment = async () => {
+        if (!user?.name) {
+            if (!user?.displayName) {
+                ToastAndroid.show("Vui lòng cung cấp đầy đủ thông tin trước khi thanh toán!", ToastAndroid.SHORT);
+                return;
+            }
+        }
+        if (!user?.phone || !user?.address || !itemCheckout || !selectedItems || !totalAmount || !totalQuantity) {
+            ToastAndroid.show("Vui lòng cung cấp đầy đủ thông tin trước khi thanh toán!", ToastAndroid.SHORT);
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            // Replace with the actual URL of your Firebase Cloud Function
+            const firebaseFunctionURL = 'https://us-central1-namthanhstores.cloudfunctions.net/createPayment';
+
+            const paymentData = {
+                amount: totalAmount,
+                items: selectedItems,
+                email: user.email,
+                address: user.address,
+                name: user?.name || user.displayName,
+                phone: user.phone,
+                note: note,
+            };
+
+            const response = await fetch(firebaseFunctionURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(paymentData)
+            });
+
+            const responseData = await response.json();
+            console.log(responseData);
+
+            if (response.ok && responseData?.order_url) {
+                Linking.openURL(responseData.order_url);
+            } else {
+                console.error("Error creating payment:", responseData.message);
+                ToastAndroid.show("Không thể tạo đơn hàng. Vui lòng thử lại!", ToastAndroid.SHORT);
+            }
+        } catch (error) {
+            console.error("Error handling payment:", error);
+            ToastAndroid.show("Đã xảy ra lỗi khi xử lý thanh toán!", ToastAndroid.SHORT);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     const renderOrderDetails = () => {
         return itemCheckout?.map((item) => {
             const selectedItem = selectedItems.find(si => si.id === item.id);
             return selectedItem ? (
                 <View style={styles.itemRow} key={item.id}>
                     <Image source={{ uri: item.image }} style={styles.itemImage} />
-                    <Text style={[styles.itemText, { flex: 3, marginHorizontal: 5, textAlign:'justify' }]}>{item.name}</Text>
-                    <Text style={[styles.itemText, { flex: 1, marginHorizontal: 5, fontSize: 13, textAlign:'right' }]}>x <Text style={{ fontWeight: 'bold'}}>{selectedItem.itemCount}</Text></Text>
+                    <Text style={[styles.itemText, { flex: 3, marginHorizontal: 5, textAlign: 'justify' }]}>{item.name}</Text>
+                    <Text style={[styles.itemText, { flex: 1, marginHorizontal: 5, fontSize: 13, textAlign: 'right' }]}>x <Text style={{ fontWeight: 'bold' }}>{selectedItem.itemCount}</Text></Text>
                 </View>
             ) : null;
         });
@@ -90,7 +144,7 @@ const Payment = ({ navigation, route }) => {
                     <View style={{ marginVertical: 5 }}>
                         <Text style={styles.title}>Địa chỉ giao hàng</Text>
                         <View style={{ flexDirection: 'row' }}>
-                            <Text>{user?.displayName || "Tên người dùng"}</Text>
+                            <Text>{user?.name || user?.displayName || "Tên người dùng"}</Text>
                             <Text>{`| ${user?.phone || 'Chưa có số điện thoại'}`}</Text>
                         </View>
                         <TouchableOpacity style={styles.addressArea} onPress={() => navigation.navigate("userinfo", { user: user, onRefresh: onRefresh })}>
@@ -157,8 +211,8 @@ const Payment = ({ navigation, route }) => {
                                 <Picker.Item label="Tiền mặt" value="cash" />
                             </Picker>
                         </View>
-                        <TouchableOpacity style={styles.paymentButton}>
-                            <Text style={styles.paymentButtonText}>Thanh toán</Text>
+                        <TouchableOpacity style={styles.paymentButton} onPress={handlePayment}>
+                            {loading ? <ActivityIndicator size={'large'} color={"#fff"} /> : <Text style={styles.paymentButtonText}>Thanh toán</Text>}
                         </TouchableOpacity>
                     </View>
                 </View>

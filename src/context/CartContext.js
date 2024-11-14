@@ -1,7 +1,8 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { getCurrentUser } from './FirebaseFunction';
 import firestore from '@react-native-firebase/firestore'
 import { ToastAndroid } from 'react-native';
+import { UserContext } from './UserContext';
 
 export const CartContext = createContext();
 
@@ -9,12 +10,17 @@ export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
     const [cartCount, setCartCount] = useState(0);
 
+    const { userExist } = useContext(UserContext);
+
     const user = getCurrentUser();
-    const ref = firestore().collection('users').doc(user.uid).collection('cart');
+    const ref = user ? firestore().collection('users').doc(user?.uid).collection('cart') : null;
 
     useEffect(() => {
         const loadCartItems = async () => {
             try {
+                if (!userExist) {
+                    return;
+                }
                 const snapshot = await ref.get();
                 const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 setCartItems(items);
@@ -50,6 +56,10 @@ export const CartProvider = ({ children }) => {
     };
 
     const addItemToCart = (item) => {
+        if (!userExist) {
+            ToastAndroid.show("Hãy đăng nhập để sử dụng tính năng này", ToastAndroid.SHORT);
+            return;
+        }
         const existingItem = cartItems.find(cartItem => cartItem.id === item.id);
         let updatedCartItems;
 
@@ -66,6 +76,10 @@ export const CartProvider = ({ children }) => {
     };
 
     const subtractItemsFromCart = (itemId) => {
+        if (!userExist) {
+            ToastAndroid.show("Hãy đăng nhập để sử dụng tính năng này", ToastAndroid.SHORT);
+            return;
+        }
         const existingItem = cartItems.find(cartItem => cartItem.id === itemId);
 
         if (existingItem.quantity > 1) {
@@ -83,6 +97,10 @@ export const CartProvider = ({ children }) => {
     };
 
     const removeItemFromCart = (itemId) => {
+        if (!userExist) {
+            ToastAndroid.show("Hãy đăng nhập để sử dụng tính năng này", ToastAndroid.SHORT);
+            return;
+        }
         const updatedCartItems = cartItems.filter(item => item.id !== itemId);
         const existingItem = cartItems.map(cartItem =>
             cartItem.id === itemId ? { ...cartItem, quantity: 0 } : cartItem
@@ -93,6 +111,10 @@ export const CartProvider = ({ children }) => {
     };
 
     const clearCart = () => {
+        if (!userExist) {
+            ToastAndroid.show("Hãy đăng nhập để sử dụng tính năng này", ToastAndroid.SHORT);
+            return;
+        }
         setCartItems([]);
         setCartCount(0);
         syncCartWithFirestore([]);

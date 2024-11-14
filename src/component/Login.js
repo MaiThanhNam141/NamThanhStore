@@ -27,12 +27,14 @@ const Login = () => {
             if (user) {
                 const userRef = firestore().collection('users').doc(user.uid);
                 const userDoc = userRef.get();
-
-                if (!userDoc.exists) {
+                
+                if (!userDoc) {
                     const userDocData = {
                         email: user.email,
                         displayName: user.displayName,
                         photoURL: user.photoURL,
+                        notification: true,
+                        voice: true,
                     };
                     userRef.set(userDocData);
                 }

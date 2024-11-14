@@ -40,6 +40,8 @@ const Register = () => {
                         email: e,
                         displayName: e.split('@')[0],
                         photoURL: 'https://firebasestorage.googleapis.com/v0/b/namthanhstores.appspot.com/o/static%2FAIImage.png?alt=media&token=6b84bbfd-a81d-4915-a7d4-8f3803b9aa71',
+                        notification: true,
+                        voice: true,
                     };
                     setuserInfo(userDocData)
                 })

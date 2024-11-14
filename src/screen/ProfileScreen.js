@@ -7,7 +7,7 @@ import storage from '@react-native-firebase/storage'
 import LinearGradient from 'react-native-linear-gradient';
 import LoadingScreen from '../data/LoadingScreen';
 
-const ProfileScreen = ({navigation}) => {
+const ProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
   const [refresh, setRefresh] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -126,9 +126,15 @@ const ProfileScreen = ({navigation}) => {
       <View style={styles.header}>
         <Text style={{ fontWeight: 'bold', fontSize: 30, color: '#000', flex: 3 }}>Hồ sơ</Text>
         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', flex: 2 }}>
-          <MaterialIcons name="shopping-cart" size={24} color="#333" onPress={() => navigation.navigate('cart')} />
-          <MaterialIcons name="notifications" size={24} color="#333" onPress={() => setModalNotificationVisible(true)} />
-          <MaterialIcons name="settings" size={24} color="#333" onPress={() => navigation.navigate('setting', {user: user, onRefresh})} />
+          <TouchableOpacity onPress={() => navigation.navigate('cart')}>
+            <MaterialIcons name="shopping-cart" size={24} color="#333" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setModalNotificationVisible(true)}>
+            <MaterialIcons name="notifications" size={24} color="#333" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('setting', { user: user, onRefresh })}>
+            <MaterialIcons name="settings" size={24} color="#333" />
+          </TouchableOpacity>
         </View>
       </View>
       <View style={{ flex: 1, backgroundColor: '#DEFFD3' }} />
@@ -212,6 +218,7 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     resizeMode: 'cover',
+    borderRadius: 100,
   },
   name: {
     marginTop: 10,

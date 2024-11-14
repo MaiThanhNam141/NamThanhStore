@@ -4,11 +4,15 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import LoadingScreen from '../data/LoadingScreen';
 import { updateUserInfo } from '../context/FirebaseFunction';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
 
 const Setting = ({ navigation, route }) => {
     const { user, onRefresh } = route.params;
-    const [isEnabledNotification, setIsEnabledNotification] = useState('notification' in route.params.user ? route.params.user.notification : true);
-    const [isEnabledAIVoice, setIsEnabledAIVoice] = useState('voice' in route.params.user ? route.params.user.voice : true);
+    // const [isEnabledNotification, setIsEnabledNotification] = useState('notification' in route.params.user ? route.params.user.notification : true);
+    const [isEnabledNotification, setIsEnabledNotification] = useState(route.params?.user?.notification ? true : false );
+    // const [isEnabledAIVoice, setIsEnabledAIVoice] = useState('voice' in route.params.user ? route.params.user.voice : true);
+    const [isEnabledAIVoice, setIsEnabledAIVoice] = useState(route.params?.user?.voice ? true : false);
     const [loading, setLoading] = useState(true);
 
     const handleSignOut = () => {
@@ -31,10 +35,12 @@ const Setting = ({ navigation, route }) => {
     const signOut = async () => {
         setLoading(true);
         try {
+            navigation.goBack();
             await Promise.all([
                 GoogleSignin.signOut(),
                 auth().signOut(),
-            ])
+            ]);
+            // navigation.jumpTo('Profile');
             ToastAndroid.show("Đăng xuất thành công", ToastAndroid.SHORT);
         } catch (error) {
             console.error("signOut: ", error);
@@ -71,7 +77,9 @@ const Setting = ({ navigation, route }) => {
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <View style={styles.header}>
-                <MaterialIcons name="chevron-left" size={50} color="#333" onPress={() => navigation.goBack()} />
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <MaterialIcons name="chevron-left" size={50} color="#333" />
+                </TouchableOpacity>
                 <Text style={{ fontWeight: 'bold', fontSize: 30, color: '#000' }}>Setting</Text>
             </View>
             <View style={{ flex: 2, backgroundColor: '#FAF5FF' }}>
@@ -164,9 +172,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     avatar: {
-        width: 110,
-        height: 110,
+        width: 85,
+        height: 85,
         resizeMode: 'cover',
+        borderRadius: 100
     },
     name: {
         marginTop: 10,

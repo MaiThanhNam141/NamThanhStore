@@ -26,10 +26,10 @@ const HomeScreen = ({ navigation }) => {
   const [translateX] = useState(new Animated.Value(-width * 0.75));
   const [cartAnimation] = useState(new Animated.Value(1));
   const [sliderImages, setSliderImages] = useState({ imageUrls: [], links: [] });
-  const { addItemToCart, cartCount } = useContext(CartContext);
   const [isSliderVisible, setIsSliderVisible] = useState(true);
   const [height, setHeight] = useState(200);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  
+  const { addItemToCart, cartCount } = useContext(CartContext);
 
   const [scrollY] = useState(new Animated.Value(0));
 
