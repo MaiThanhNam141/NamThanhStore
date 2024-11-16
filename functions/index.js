@@ -18,14 +18,15 @@ const config = {
 
 // Tạo đơn hàng thanh toán
 exports.createPayment = functions.https.onRequest(async (req, res) => {
-    const { amount, items, email, address, name, note, phone } = req.body;
+    const { amount, items, email, address, name, note, phone, userid } = req.body;
 
-    if (!amount || !items || !email || !address || !name || !phone) {
+    if (!amount || !items || !email || !address || !name || !phone || !userid) {
         return res.status(500).json({ message: 'Cannot create payment without required information' });
     }
 
     const embed_data = {
         email,
+        name,
         phone,
         address,
         status: "Pending"
@@ -35,7 +36,7 @@ exports.createPayment = functions.https.onRequest(async (req, res) => {
     const order = {
         app_id: config.app_id,
         app_trans_id: `${moment().format('YYMMDD')}_${transID}`,
-        app_user: name,
+        app_user: userid,
         app_time: Date.now(),
         item: JSON.stringify(items),
         embed_data: JSON.stringify(embed_data),
@@ -50,7 +51,7 @@ exports.createPayment = functions.https.onRequest(async (req, res) => {
 
     try {
         const result = await axios.post(config.endpoint, null, { params: order });
-        return res.status(200).json(result.data);
+        return res.status(200).json({...result.data, app_trans_id: order.app_trans_id });
     } catch (error) {
         return res.status(500).json({ message: 'Error creating order', error });
     }
@@ -73,6 +74,7 @@ exports.paymentCallback = functions.https.onRequest((req, res) => {
                 itemCount: item.itemCount,
             }));
             const embedData = JSON.parse(dataJson.embed_data);
+            
             // Lưu dữ liệu vào Firestore
             const orderData = {
                 ...dataJson,
@@ -80,25 +82,40 @@ exports.paymentCallback = functions.https.onRequest((req, res) => {
                 embed_data: embedData,  
             };
             const orderRef = admin.firestore().collection('orders').doc(dataJson.app_trans_id);
-            orderRef.set(orderData);
-            const email = orderData.embed_data.email;
 
-            // Gửi email cảm ơn đến người mua hàng
-            fetch("https://script.google.com/macros/s/AKfycbxtGHV6R0XAWI02Rlu3McVzK9SC7gNAce6jtZBOCtk4CFg_pXz5VO3qQPHCeM4BPWXO/exec", {
+            // Tạo các Promise cho các tác vụ đồng thời
+            const updateOrderPromise = orderRef.set(orderData);
+            const sendEmailPromise = fetch("https://script.google.com/macros/s/AKfycbxtGHV6R0XAWI02Rlu3McVzK9SC7gNAce6jtZBOCtk4CFg_pXz5VO3qQPHCeM4BPWXO/exec", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email: embedData.email }),
             });
-            result.return_code = 1;
-            result.return_message = 'success';
+            const sendNotificationPromise = fetch("https://us-central1-namthanhstores.cloudfunctions.net/sendNotification", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: "Thông báo", message: "Đơn hàng đã được cập nhật thành công" }),
+            });
+
+            // Sử dụng Promise.all để thực hiện tất cả tác vụ đồng thời
+            Promise.all([updateOrderPromise, sendEmailPromise, sendNotificationPromise])
+                .then(() => {
+                    result.return_code = 1;
+                    result.return_message = 'success';
+                    res.json(result);
+                })
+                .catch((error) => {
+                    result.return_code = 0;
+                    result.return_message = `Error: ${error.message}`;
+                    res.json(result);
+                });
         }
     } catch (ex) {
         result.return_code = 0;
         result.return_message = ex.message;
+        res.json(result);
     }
-
-    res.json(result);
 });
+
 
 // Kiểm tra trạng thái đơn hàng
 exports.checkOrderStatus = functions.https.onRequest(async (req, res) => {
@@ -124,6 +141,16 @@ exports.checkOrderStatus = functions.https.onRequest(async (req, res) => {
 });
 
 exports.sendNotification = functions.https.onRequest(async (req, res) => {
+    // Cấu hình header CORS
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+    // Xử lý preflight request
+    if (req.method === 'OPTIONS') {
+        return res.status(204).send('');
+    }
+
     // Chỉ cho phép phương thức POST
     if (req.method !== 'POST') {
         return res.status(405).send('Method Not Allowed');
@@ -136,20 +163,23 @@ exports.sendNotification = functions.https.onRequest(async (req, res) => {
         return res.status(400).send('Title and body are required');
     }
 
+    const logoUrl = "https://firebasestorage.googleapis.com/v0/b/namthanhstores.appspot.com/o/static%2Flogo.png?alt=media&token=bdb4fede-d51e-4d72-adc9-e679f124d572";
+
     const message = {
-        notification: {
-            title,
+        notification: { 
+            title, 
             body,
+            image: logoUrl,
         },
         topic: 'all_users',
     };
 
     try {
-        const response = await admin.messaging().send(message);
-        console.log('Successfully sent message:', response);
-        res.status(200).send({ success: true, message: 'Notification sent successfully' });
+        await admin.messaging().send(message);
+        return res.status(200).send({ success: true, message: 'Notification sent successfully' });
     } catch (error) {
         console.error('Error sending message:', error);
-        res.status(500).send({ success: false, error: 'Error sending notification' });
+        return res.status(500).send({ success: false, error: 'Error sending notification: ' + error.message });
     }
 });
+

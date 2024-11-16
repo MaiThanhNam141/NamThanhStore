@@ -1,15 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { RefreshControl, SafeAreaView, View, TextInput, FlatList, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useContext } from 'react';
+import { RefreshControl, SafeAreaView, View, TextInput, FlatList, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity, ToastAndroid } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import firestore from '@react-native-firebase/firestore';
+import ImageViewing from 'react-native-image-viewing';
+import { CartContext } from '../context/CartContext';
 
-const SearchScreen = () => {
+const SearchScreen = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [titleResults, setTitleResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [lastVisible, setLastVisible] = useState(null); // to track pagination
     const [isLoadingMore, setIsLoadingMore] = useState(false); // to manage loading state for additional items
+    const [visible, setVisible] = useState(false);
+    const [images, setImages] = useState([]);
+
+    const { addItemToCart } = useContext(CartContext);
 
     const handleSearch = (query) => {
         setSearchQuery(query);
@@ -26,19 +32,41 @@ const SearchScreen = () => {
             .toString()
             .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     };
+    const handleDetailScreen = (item) => {
+        navigation.navigate('detail', { selectedItem: item })
+    }
 
-    const renderResultItem = ({ item }) => {
+    const handleImagePress = (imageUri) => {
+        setImages([{ uri: imageUri }]);
+        setVisible(true);
+    };
+
+    const handleImageViewingClose = () => {
+        setVisible(false);
+    };
+
+    const handleAddToCart = (item) => {
+        ToastAndroid.show("Thêm thành công", ToastAndroid.SHORT);
+        addItemToCart(item);
+    };
+
+    const renderProduct = ({ item }) => {
         const isDiscount = item.discount > 0;
+
         return (
             <View style={styles.productContainer}>
                 {isDiscount && <Text style={styles.sale}>Sale {item.discount}%</Text>}
-                <Image source={{ uri: item.image }} style={styles.productImage} />
-                <Text style={styles.productName}>{item.name}</Text>
-                <TouchableOpacity style={styles.priceButton}>
+                <TouchableOpacity onPress={() => handleImagePress(item.image)}>
+                    <Image source={{ uri: item.image }} style={styles.productImage} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDetailScreen(item)}>
+                    <Text style={styles.productName}>{item.name}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.priceButton} onPress={() => handleAddToCart(item)}>
                     {isDiscount ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={[styles.productPrice, { textDecorationLine: 'line-through', marginRight: 5, color: '#898989' }]}>
-                                {formatNumberWithDots(item.price)} VND
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={[styles.productPrice, { textDecorationLine: 'line-through', marginRight: 5, color: '#898989', fontSize: 7 }]}>
+                                {formatNumberWithDots(item.price)}
                             </Text>
                             <Text style={styles.discountPrice}>
                                 {formatNumberWithDots(Math.floor(item.price * (1 - item.discount / 100)))} VND
@@ -54,7 +82,7 @@ const SearchScreen = () => {
 
     const searchArticles = async (query, isNewSearch = false) => {
         if (loading || isLoadingMore) return; // Avoid multiple calls
-    
+
         setLoading(isNewSearch); // Show main loader for a fresh search
         setIsLoadingMore(!isNewSearch); // Show loading more for pagination
         try {
@@ -64,23 +92,23 @@ const SearchScreen = () => {
                 .where('name', '>=', query)
                 .where('name', '<=', query + '\uf8ff')
                 .limit(6);
-    
+
             if (lastVisible && !isNewSearch) {
                 articlesRef = articlesRef.startAfter(lastVisible); // Paginate based on the last visible document
             }
-    
+
             const titleSnapshot = await articlesRef.get();
             const newResults = titleSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
             const lastVisibleDoc = titleSnapshot.docs[titleSnapshot.docs.length - 1];
-    
+
             if (isNewSearch) {
                 setTitleResults(newResults);
             } else {
                 setTitleResults([...titleResults, ...newResults]);
             }
-    
+
             setLastVisible(lastVisibleDoc); // Save last visible document for pagination
-    
+
         } catch (error) {
             console.error(error);
         } finally {
@@ -89,7 +117,6 @@ const SearchScreen = () => {
             setIsLoadingMore(false);
         }
     };
-    
 
     const handleLoadMore = () => {
         if (!isLoadingMore && lastVisible) {
@@ -108,7 +135,7 @@ const SearchScreen = () => {
             <FlatList
                 data={titleResults}
                 keyExtractor={(item) => item.id}
-                renderItem={renderResultItem}
+                renderItem={renderProduct}
                 ListEmptyComponent={() => <Text style={styles.emptyText}>Không có kết quả</Text>}
                 numColumns={2}
                 refreshControl={
@@ -118,8 +145,8 @@ const SearchScreen = () => {
                     />
                 }
                 onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.5} // Trigger when user scrolls to 50% from bottom
-                ListFooterComponent={() => isLoadingMore ? <ActivityIndicator size="small" /> : null}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={() => (loading ? <ActivityIndicator size="small" /> : null)}
             />
         );
     };
@@ -136,6 +163,7 @@ const SearchScreen = () => {
                 />
             </View>
             {loading ? <ActivityIndicator size="large" /> : renderIndependentResults()}
+            <ImageViewing images={images} visible={visible} onRequestClose={handleImageViewingClose} />
         </SafeAreaView>
     );
 };
@@ -169,20 +197,20 @@ const styles = StyleSheet.create({
         backgroundColor: '#f9f9f9',
         borderRadius: 10,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-evenly',
         maxWidth: '45%',
         minWidth: '45%',
         overflow: 'hidden',
     },
     productImage: {
-        width: '100%',
+        width: 170,
         height: 170,
-        resizeMode: 'cover',
+        resizeMode: 'contain',
         marginBottom: 10,
     },
     productName: {
         fontWeight: 'bold',
-        fontSize: 16,
+        fontSize: 14,
         marginBottom: 5,
         textAlign: 'center',
         zIndex: 1,
@@ -204,7 +232,6 @@ const styles = StyleSheet.create({
     priceButton: {
         backgroundColor: '#fff',
         padding: 10,
-        borderRadius: 5,
         marginHorizontal: 5,
         marginBottom: 5,
         maxWidth: '80%',

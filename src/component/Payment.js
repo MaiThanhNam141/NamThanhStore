@@ -92,8 +92,10 @@ const Payment = ({ navigation, route }) => {
                 name: user?.name || user.displayName,
                 phone: user.phone,
                 note: note,
+                location: user?.location,
+                userid: getCurrentUser().uid,
             };
-
+            
             const response = await fetch(firebaseFunctionURL, {
                 method: 'POST',
                 headers: {
@@ -103,10 +105,11 @@ const Payment = ({ navigation, route }) => {
             });
 
             const responseData = await response.json();
-            console.log(responseData);
 
             if (response.ok && responseData?.order_url) {
+                console.log(responseData?.order_url);
                 Linking.openURL(responseData.order_url);
+                navigation.navigate('paymentcallback', { app_trans_id: responseData.app_trans_id })
             } else {
                 console.error("Error creating payment:", responseData.message);
                 ToastAndroid.show("Không thể tạo đơn hàng. Vui lòng thử lại!", ToastAndroid.SHORT);
@@ -136,7 +139,9 @@ const Payment = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.header}>
-                <MaterialIcons name="chevron-left" size={30} color="#333" onPress={() => navigation.goBack()} />
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <MaterialIcons name="chevron-left" size={30} color="#333" />
+                </TouchableOpacity>
                 <Text style={{ fontWeight: '600', fontSize: 20, color: '#000', marginLeft: 20 }}>Xác nhận đơn hàng</Text>
             </View>
             <ScrollView style={{ flex: 1 }}>

@@ -9,7 +9,7 @@ const DetailScreen = ({ navigation, route }) => {
 
     const handleAddToCart = () => {
         addItemToCart(selectedItem);
-        ToastAndroid.show("Thành công", ToastAndroid.SHORT)
+        ToastAndroid.show("Thêm thành công", ToastAndroid.SHORT)
     };
 
     const formatNumberWithDots = (number) => {
@@ -19,7 +19,9 @@ const DetailScreen = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.header}>
-                <MaterialIcons name="chevron-left" size={30} color="#333" onPress={() => navigation.goBack()} />
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <MaterialIcons name="chevron-left" size={30} color="#333" />
+                </TouchableOpacity>
                 <Text style={{ fontWeight: '600', fontSize: 20, color: '#000', marginLeft: 20 }}>Chi tiết sản phẩm</Text>
             </View>
             <ScrollView contentContainerStyle={styles.container}>

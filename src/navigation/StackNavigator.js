@@ -12,6 +12,7 @@ import About from "../component/About";
 import UserInfo from "../component/UserInfo";
 import Payment from "../component/Payment";
 import DetailScreen from "../component/DetailScreen";
+import PaymentCallback from "../component/PaymentCallback";
 
 const Stack = createStackNavigator()
 
@@ -31,6 +32,7 @@ const MainStackNavigator = () =>{
             <Stack.Screen name="loginscreen" component={LoginScreen} />
             <Stack.Screen name="userinfo" component={UserInfo} />
             <Stack.Screen name="detail" component={DetailScreen} />
+            <Stack.Screen name="paymentcallback" component={PaymentCallback} />
         </Stack.Navigator>
     )
 }
@@ -58,6 +60,7 @@ const ProfileStackNavigator = () =>{
             <Stack.Screen name="about" component={About} />
             <Stack.Screen name="userinfo" component={UserInfo} />
             <Stack.Screen name="payment" component={Payment} />
+            <Stack.Screen name="paymentcallback" component={PaymentCallback} />
         </Stack.Navigator>
     )
 }
@@ -73,6 +76,7 @@ const SearchStackNavigator = () => {
                 gestureDirection:"horizontal",
             }}>
                 <Stack.Screen name="search" component={SearchScreen} />
+                <Stack.Screen name="detail" component={DetailScreen} />
         </Stack.Navigator>
     )
 }

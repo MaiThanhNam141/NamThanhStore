@@ -9,9 +9,7 @@ import auth from '@react-native-firebase/auth';
 
 const Setting = ({ navigation, route }) => {
     const { user, onRefresh } = route.params;
-    // const [isEnabledNotification, setIsEnabledNotification] = useState('notification' in route.params.user ? route.params.user.notification : true);
     const [isEnabledNotification, setIsEnabledNotification] = useState(route.params?.user?.notification ? true : false );
-    // const [isEnabledAIVoice, setIsEnabledAIVoice] = useState('voice' in route.params.user ? route.params.user.voice : true);
     const [isEnabledAIVoice, setIsEnabledAIVoice] = useState(route.params?.user?.voice ? true : false);
     const [loading, setLoading] = useState(true);
 

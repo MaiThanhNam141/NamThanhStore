@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext, useCallback } from 'react';
-import { Easing, Text, View, StyleSheet, SafeAreaView, TouchableOpacity, Image, Animated, Dimensions, FlatList, RefreshControl, ScrollView, ActivityIndicator } from 'react-native';
+import { Easing, Text, View, StyleSheet, SafeAreaView, TouchableOpacity, Image, Animated, Dimensions, FlatList, RefreshControl, ScrollView, ActivityIndicator, ToastAndroid } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { logo } from '../data/AssetsRef';
 import SkeletonPost from '../data/SkeletonPost';
@@ -100,7 +100,7 @@ const HomeScreen = ({ navigation }) => {
 
   const handleAddToCart = (item) => {
     addItemToCart(item);
-
+    ToastAndroid.show("Thêm thành công", ToastAndroid.SHORT)
     Animated.sequence([
       Animated.timing(cartAnimation, {
         toValue: 1.3,
