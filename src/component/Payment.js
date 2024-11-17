@@ -8,7 +8,6 @@ const Payment = ({ navigation, route }) => {
     const { selectedItems, totalPrice, totalQuantity } = route.params;
     const [user, setUser] = useState(null);
     const [itemCheckout, setItemCheckout] = useState(null);
-    const [refresh, setRefresh] = useState(false);
     const [note, setNote] = useState('');
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('zalo');
@@ -58,11 +57,7 @@ const Payment = ({ navigation, route }) => {
             fetchUser(),
             fetchItems(),
         ])
-    }, [refresh])
-
-    const onRefresh = () => {
-        setRefresh(!refresh);
-    }
+    }, [])
 
     const handleLogin = () => navigation.navigate('loginscreen');
 

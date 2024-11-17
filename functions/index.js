@@ -183,3 +183,46 @@ exports.sendNotification = functions.https.onRequest(async (req, res) => {
     }
 });
 
+exports.sendNotificationToUser = functions.https.onRequest(async (req, res) => {
+    // Cấu hình header CORS
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+    // Xử lý preflight request
+    if (req.method === 'OPTIONS') {
+        return res.status(204).send('');
+    }
+
+    // Chỉ cho phép phương thức POST
+    if (req.method !== 'POST') {
+        return res.status(405).send('Method Not Allowed');
+    }
+
+    const { token, title, body } = req.body;
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!token || !title || !body) {
+        return res.status(400).send('Token, title, and body are required');
+    }
+
+    const logoUrl = "https://firebasestorage.googleapis.com/v0/b/namthanhstores.appspot.com/o/static%2Flogo.png?alt=media&token=bdb4fede-d51e-4d72-adc9-e679f124d572";
+
+    const message = {
+        notification: { 
+            title, 
+            body,
+            image: logoUrl,
+        },
+        token: token,
+    };
+
+    try {
+        // Gửi thông báo qua FCM
+        await admin.messaging().send(message);
+        return res.status(200).send({ success: true, message: 'Notification sent successfully' });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        return res.status(500).send({ success: false, error: 'Error sending notification: ' + error.message });
+    }
+});

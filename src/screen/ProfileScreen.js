@@ -179,7 +179,7 @@ const ProfileScreen = ({ navigation }) => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Thông báo</Text>
             <View style={styles.dividerModal} />
-            <View style={{ alignItems: 'center', }}>
+            <View style={{ alignItems: 'center' }}>
               <Text style={styles.notificationText}>Bạn chưa có thông báo nào</Text>
             </View>
             <TouchableOpacity

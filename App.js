@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaView, PermissionsAndroid, ToastAndroid } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import BottomTabNavigation from './src/navigation/BottomTabNavagition';
 import { UserProvider } from './src/context/UserContext';
 import { CartProvider } from './src/context/CartContext';
 import messaging from '@react-native-firebase/messaging';
+import { updateUserInfo } from './src/context/FirebaseFunction';
 
 const App = () => {
 
@@ -19,10 +20,8 @@ const App = () => {
       if (enabled) {
         console.log('Authorization status:', authStatus);
         const token = await messaging().getToken();
-        console.log("FCM token: ", token);
-
+        updateUserInfo({ token: token });
         messaging().subscribeToTopic('all_users');
-        console.log('Subscribed to all_users topic');
       } else {
         ToastAndroid.show("Không thể gửi thông báo nếu bạn không cấp quyền", ToastAndroid.SHORT);
         PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
@@ -33,10 +32,8 @@ const App = () => {
         if (enabled) {
           console.log('Authorization status:', authStatus);
           const token = await messaging().getToken();
-          console.log("FCM token: ", token);
-
+          updateUserInfo({ token: token });
           messaging().subscribeToTopic('all_users');
-          console.log('Subscribed to all_users topic');
         }
       }
     };
