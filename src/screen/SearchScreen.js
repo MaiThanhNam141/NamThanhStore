@@ -4,14 +4,17 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import firestore from '@react-native-firebase/firestore';
 import ImageViewing from 'react-native-image-viewing';
 import { CartContext } from '../context/CartContext';
+import { Picker } from '@react-native-picker/picker';
 
 const SearchScreen = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [titleResults, setTitleResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [filteredResults, setFilteredResults] = useState([]);
+    const [selectedType, setSelectedType] = useState('All');
     const [refreshing, setRefreshing] = useState(false);
-    const [lastVisible, setLastVisible] = useState(null); // to track pagination
-    const [isLoadingMore, setIsLoadingMore] = useState(false); // to manage loading state for additional items
+    const [lastVisible, setLastVisible] = useState(null); 
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [visible, setVisible] = useState(false);
     const [images, setImages] = useState([]);
 
@@ -129,11 +132,18 @@ const SearchScreen = ({ navigation }) => {
             searchArticles(searchQuery, true); // Refresh search
         }
     }, [refreshing]);
+    useEffect(() => {
+        if (selectedType === "") {
+            setFilteredResults(titleResults);
+        } else {
+            setFilteredResults(titleResults.filter(item => item.animal === selectedType));
+        }
+    }, [selectedType, titleResults]);
 
     const renderIndependentResults = () => {
         return (
             <FlatList
-                data={titleResults}
+                data={filteredResults}
                 keyExtractor={(item) => item.id}
                 renderItem={renderProduct}
                 ListEmptyComponent={() => <Text style={styles.emptyText}>Không có kết quả</Text>}
@@ -161,6 +171,21 @@ const SearchScreen = ({ navigation }) => {
                     value={searchQuery}
                     onChangeText={handleSearch}
                 />
+            </View>
+            <View style={styles.filterContainer}>
+                <Text style={styles.filterLabel}>Lọc theo đối tượng chăn nuôi</Text>
+                <Picker
+                    selectedValue={selectedType}
+                    style={styles.picker}
+                    onValueChange={(itemValue) => setSelectedType(itemValue)}
+                >
+                    <Picker.Item label="Tất cả " value="" />
+                    <Picker.Item label="Bò" value="Bò" />
+                    <Picker.Item label="Gà" value="Gà" />
+                    <Picker.Item label="Heo" value="Heo" />
+                    <Picker.Item label="Dê" value="Dê" />
+                    <Picker.Item label="Cá" value="Cá" />
+                </Picker>
             </View>
             {loading ? <ActivityIndicator size="large" /> : renderIndependentResults()}
             <ImageViewing images={images} visible={visible} onRequestClose={handleImageViewingClose} />
@@ -190,6 +215,21 @@ const styles = StyleSheet.create({
         flex: 1,
         marginLeft: 10,
         fontSize: 16,
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 10,
+        marginBottom: 10,
+    },
+    filterLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    picker: {
+        flex: 1,
+        marginLeft: 10,
     },
     productContainer: {
         flex: 1,
