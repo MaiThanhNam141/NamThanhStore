@@ -29,6 +29,7 @@ exports.createPayment = functions.https.onRequest(async (req, res) => {
         name,
         phone,
         address,
+        note,
         status: "Pending"
     };
     const transID = Math.floor(Math.random() * 1000000);

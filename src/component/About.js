@@ -11,9 +11,7 @@ const About = ({ navigation }) => {
 
     const handlePress = (url) => {
         try {
-            if (url.startsWith('tel:')) {
-                Linking.openURL(url);
-            } else if (url.startsWith('mailto:')) {
+            if (url.startsWith('mailto:')) {
                 Linking.openURL(url);
             } else {
                 Linking.openURL(`tel:${url}`);
@@ -148,16 +146,15 @@ const styles = StyleSheet.create({
         marginVertical: 5
     },
     linkText: {
-        fontSize: 15,
+        fontSize: 13,
         marginVertical: 3,
-        fontWeight: 'bold',
+        fontWeight: '600',
     },
     text: {
         color: 'black',
         textAlign: 'justify',
         fontWeight: '300',
         marginVertical: 4,
-        fontFamily: ''
     },
     modalContainer: {
         flex: 1,

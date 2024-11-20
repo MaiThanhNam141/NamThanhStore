@@ -60,3 +60,39 @@ export const fetchItemsCheckout = async (selectedItems) => {
         ToastAndroid.show("Không thể lấy thông tin sản phẩm", ToastAndroid.SHORT);
     }
 };
+
+export const updateOrderWithID = async (id, data, status) => {
+    try {
+        await firestore().collection('orders').doc(id).update({
+            embed_data: {
+                ...data,
+                status: status
+            }
+        });
+        return true;
+    } catch (error) {
+        console.error("Error update order: ", error);
+        return false;
+    }
+};
+
+export const getUserRef = () => {
+    try {
+        const user = getCurrentUser();
+        return firestore().collection('users').doc(user.uid);
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+export const updateRateProduct = (rate, rateCount, id) => {
+    try {
+        firestore().collection('productFood').doc(id).update({
+            rate: rate, 
+            rateCount: rateCount,
+        });
+    } catch (error) {
+        console.error("Error update order: ", error);
+    }
+}

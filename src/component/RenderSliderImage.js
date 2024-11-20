@@ -1,15 +1,10 @@
 import React from 'react'
-import { Linking } from 'react-native'
 import { SliderBox } from 'react-native-image-slider-box'
 
 export default RenderSliderImage = props => {
   const onCurrentImagePressed = index => {
-    const link = props.links[index];
-    if (!link) {
-      console.error(`No URL found for index ${index}`);
-      return;
-    }
-    Linking.openURL(link);
+    const title = props.titles[index];
+    props.onPress(title);
   }
 
   return (

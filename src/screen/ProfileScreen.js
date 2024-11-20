@@ -148,21 +148,21 @@ const ProfileScreen = ({ navigation }) => {
         </View>
         <View style={styles.uilities}>
           <View style={styles.uilitiesRow}>
-            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopRightRadius: 40, borderBottomRightRadius: 40 }]}>
+            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopRightRadius: 40, borderBottomRightRadius: 40 }]} onPress={() => navigation.navigate("orderpanel")}>
               <MaterialIcons name="system-security-update" size={50} color="#333" />
               <Text>Chờ xác nhận</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopLeftRadius: 40, borderBottomLeftRadius: 40 }]}>
+            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopLeftRadius: 40, borderBottomLeftRadius: 40 }]} onPress={() => navigation.navigate("orderpanel")}>
               <MaterialIcons name="shopping-cart-checkout" size={50} color="#333" />
               <Text>Chờ lấy hàng</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.uilitiesRow}>
-            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopRightRadius: 40, borderBottomRightRadius: 40 }]}>
+            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopRightRadius: 40, borderBottomRightRadius: 40 }]} onPress={() => navigation.navigate("orderpanel")}>
               <MaterialIcons name="local-shipping" size={50} color="#333" />
               <Text>Chờ giao hàng</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopLeftRadius: 40, borderBottomLeftRadius: 40 }]}>
+            <TouchableOpacity style={[styles.uilitiesBtn, { borderTopLeftRadius: 40, borderBottomLeftRadius: 40 }]} onPress={() => navigation.navigate("orderpanel")}>
               <MaterialIcons name="new-releases" size={50} color="#333" />
               <Text>Đáng giá</Text>
             </TouchableOpacity>

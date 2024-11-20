@@ -13,6 +13,9 @@ import UserInfo from "../component/UserInfo";
 import Payment from "../component/Payment";
 import DetailScreen from "../component/DetailScreen";
 import PaymentCallback from "../component/PaymentCallback";
+import ListProduct from "../component/ListProduct";
+import OrderedPanel from "../component/OrderedPanel";
+import OrderDetail from "../component/OrderDetail";
 
 const Stack = createStackNavigator()
 
@@ -33,17 +36,16 @@ const MainStackNavigator = () =>{
             <Stack.Screen name="userinfo" component={UserInfo} />
             <Stack.Screen name="detail" component={DetailScreen} />
             <Stack.Screen name="paymentcallback" component={PaymentCallback} />
+            <Stack.Screen name="listproduct" component={ListProduct} />
         </Stack.Navigator>
     )
 }
-
 
 const ProfileStackNavigator = () =>{
     const { userExist } = useContext(UserContext);
 
     return(
         <Stack.Navigator 
-            initialRouteName="loginscreen"
             screenOptions={{
                 headerStyle: {backgroundColor: "#91c4f8"},
                 headerShown: false,
@@ -61,6 +63,8 @@ const ProfileStackNavigator = () =>{
             <Stack.Screen name="userinfo" component={UserInfo} />
             <Stack.Screen name="payment" component={Payment} />
             <Stack.Screen name="paymentcallback" component={PaymentCallback} />
+            <Stack.Screen name="orderpanel" component={OrderedPanel} />
+            <Stack.Screen name="orderdetail" component={OrderDetail} />
         </Stack.Navigator>
     )
 }

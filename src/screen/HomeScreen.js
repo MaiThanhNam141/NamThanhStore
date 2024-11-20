@@ -150,8 +150,8 @@ const HomeScreen = ({ navigation }) => {
       if (snapshot) {
         const images = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         const imageUrls = images.map(image => image.urlImages);
-        const links = images.map(image => image.link);
-        setSliderImages({ imageUrls, links });
+        const titles = images.map(image => image.title);
+        setSliderImages({ imageUrls, titles });
       }
     } catch (error) {
       console.error("HomeScreen: Lỗi khi fetch slider images:", error);
@@ -234,6 +234,10 @@ const HomeScreen = ({ navigation }) => {
     const newProduct = product.filter((item) => item.animal === selected);
     setFilterProduct(newProduct);
     toggleMenu()
+  }
+
+  const handleBannerPress = (condition) => {
+    navigation.navigate("listproduct", { condition: condition });
   }
 
   const renderMenu = () => {
@@ -331,7 +335,7 @@ const HomeScreen = ({ navigation }) => {
       {renderMenu()}
       {isSliderVisible && selectedAnimal === null && (
         <Animated.View style={[styles.renderImage, { height: height, transform: [{ scale }], opacity, left }]}>
-          <RenderSliderImage images={sliderImages.imageUrls} links={sliderImages.links} />
+          <RenderSliderImage images={sliderImages.imageUrls} titles={sliderImages.titles} onPress={handleBannerPress} />
         </Animated.View>
       )}
       {renderProductHome()}

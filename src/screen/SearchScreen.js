@@ -4,16 +4,18 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import firestore from '@react-native-firebase/firestore';
 import ImageViewing from 'react-native-image-viewing';
 import { CartContext } from '../context/CartContext';
+import { Picker } from '@react-native-picker/picker';
 
 const SearchScreen = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [titleResults, setTitleResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-    const [lastVisible, setLastVisible] = useState(null); // to track pagination
-    const [isLoadingMore, setIsLoadingMore] = useState(false); // to manage loading state for additional items
+    const [lastVisible, setLastVisible] = useState(null)
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [visible, setVisible] = useState(false);
     const [images, setImages] = useState([]);
+    const [selectedAnimal, setSelectedAnimal] = useState('');
 
     const { addItemToCart } = useContext(CartContext);
 
@@ -81,23 +83,22 @@ const SearchScreen = ({ navigation }) => {
     };
 
     const searchArticles = async (query, isNewSearch = false) => {
-        if (loading || isLoadingMore) return; // Avoid multiple calls
-
-        setLoading(isNewSearch); // Show main loader for a fresh search
-        setIsLoadingMore(!isNewSearch); // Show loading more for pagination
+        if (loading || isLoadingMore) return;
+        setLoading(isNewSearch);
+        setIsLoadingMore(!isNewSearch);
         try {
             const db = firestore();
-            let articlesRef = db.collection('productFood')
-                .orderBy('name') // Order by name for consistent pagination
+            let ref = db.collection('productFood')
+                .orderBy('name')
                 .where('name', '>=', query)
                 .where('name', '<=', query + '\uf8ff')
                 .limit(6);
 
             if (lastVisible && !isNewSearch) {
-                articlesRef = articlesRef.startAfter(lastVisible); // Paginate based on the last visible document
+                ref = ref.startAfter(lastVisible);
             }
 
-            const titleSnapshot = await articlesRef.get();
+            const titleSnapshot = await ref.get();
             const newResults = titleSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
             const lastVisibleDoc = titleSnapshot.docs[titleSnapshot.docs.length - 1];
 
@@ -107,7 +108,7 @@ const SearchScreen = ({ navigation }) => {
                 setTitleResults([...titleResults, ...newResults]);
             }
 
-            setLastVisible(lastVisibleDoc); // Save last visible document for pagination
+            setLastVisible(lastVisibleDoc);
 
         } catch (error) {
             console.error(error);
@@ -126,14 +127,15 @@ const SearchScreen = ({ navigation }) => {
 
     useEffect(() => {
         if (refreshing && searchQuery) {
-            searchArticles(searchQuery, true); // Refresh search
+            searchArticles(searchQuery, true);
         }
     }, [refreshing]);
 
     const renderIndependentResults = () => {
+        const filterProduct = titleResults.filter((item) => item.animal === selectedAnimal);
         return (
             <FlatList
-                data={titleResults}
+                data={selectedAnimal !== "a" ? filterProduct : titleResults}
                 keyExtractor={(item) => item.id}
                 renderItem={renderProduct}
                 ListEmptyComponent={() => <Text style={styles.emptyText}>Không có kết quả</Text>}
@@ -162,6 +164,18 @@ const SearchScreen = ({ navigation }) => {
                     onChangeText={handleSearch}
                 />
             </View>
+            <Picker
+                selectedValue={selectedAnimal}
+                onValueChange={(itemValue) => setSelectedAnimal(itemValue)}
+                style={styles.picker}
+            >
+                <Picker.Item label="Tất cả" value="a" />
+                <Picker.Item label="Cá" value="Cá" />
+                <Picker.Item label="Dê" value="Dê" />
+                <Picker.Item label="Bò" value="Bò" />
+                <Picker.Item label="Gà" value="Gà" />
+                <Picker.Item label="Heo" value="Heo" />
+            </Picker>
             {loading ? <ActivityIndicator size="large" /> : renderIndependentResults()}
             <ImageViewing images={images} visible={visible} onRequestClose={handleImageViewingClose} />
         </SafeAreaView>
@@ -176,6 +190,11 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         marginHorizontal: 0,
         backgroundColor: '#fff',
+    },
+    picker: {
+        height: 50,
+        width: '100%',
+        marginBottom: 10,
     },
     searchBar: {
         flexDirection: 'row',
