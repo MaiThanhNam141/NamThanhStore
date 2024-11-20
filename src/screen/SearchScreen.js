@@ -131,8 +131,9 @@ const SearchScreen = ({ navigation }) => {
             searchArticles(searchQuery, true);
         }
     }, [refreshing]);
+
     useEffect(() => {
-        if (selectedType === "") {
+        if (selectedType === "a") {
             setFilteredResults(titleResults);
         } else {
             setFilteredResults(titleResults.filter(item => item.animal === selectedType));
@@ -142,7 +143,7 @@ const SearchScreen = ({ navigation }) => {
     const renderIndependentResults = () => {
         return (
             <FlatList
-                data={filteredResults}
+                data={selectedType === "a" ? titleResults : filteredResults}
                 keyExtractor={(item) => item.id}
                 renderItem={renderProduct}
                 ListEmptyComponent={() => <Text style={styles.emptyText}>Không có kết quả</Text>}
@@ -178,7 +179,7 @@ const SearchScreen = ({ navigation }) => {
                     style={styles.picker}
                     onValueChange={(itemValue) => setSelectedType(itemValue)}
                 >
-                    <Picker.Item label="Tất cả " value="" />
+                    <Picker.Item label="Tất cả " value="a" />
                     <Picker.Item label="Bò" value="Bò" />
                     <Picker.Item label="Gà" value="Gà" />
                     <Picker.Item label="Heo" value="Heo" />
