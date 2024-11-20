@@ -10,12 +10,13 @@ const SearchScreen = ({ navigation }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [titleResults, setTitleResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [filteredResults, setFilteredResults] = useState([]);
+    const [selectedType, setSelectedType] = useState('All');
     const [refreshing, setRefreshing] = useState(false);
-    const [lastVisible, setLastVisible] = useState(null)
+    const [lastVisible, setLastVisible] = useState(null); 
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [visible, setVisible] = useState(false);
     const [images, setImages] = useState([]);
-    const [selectedAnimal, setSelectedAnimal] = useState('');
 
     const { addItemToCart } = useContext(CartContext);
 
@@ -130,12 +131,18 @@ const SearchScreen = ({ navigation }) => {
             searchArticles(searchQuery, true);
         }
     }, [refreshing]);
+    useEffect(() => {
+        if (selectedType === "") {
+            setFilteredResults(titleResults);
+        } else {
+            setFilteredResults(titleResults.filter(item => item.animal === selectedType));
+        }
+    }, [selectedType, titleResults]);
 
     const renderIndependentResults = () => {
-        const filterProduct = titleResults.filter((item) => item.animal === selectedAnimal);
         return (
             <FlatList
-                data={selectedAnimal !== "a" ? filterProduct : titleResults}
+                data={filteredResults}
                 keyExtractor={(item) => item.id}
                 renderItem={renderProduct}
                 ListEmptyComponent={() => <Text style={styles.emptyText}>Không có kết quả</Text>}
@@ -164,18 +171,21 @@ const SearchScreen = ({ navigation }) => {
                     onChangeText={handleSearch}
                 />
             </View>
-            <Picker
-                selectedValue={selectedAnimal}
-                onValueChange={(itemValue) => setSelectedAnimal(itemValue)}
-                style={styles.picker}
-            >
-                <Picker.Item label="Tất cả" value="a" />
-                <Picker.Item label="Cá" value="Cá" />
-                <Picker.Item label="Dê" value="Dê" />
-                <Picker.Item label="Bò" value="Bò" />
-                <Picker.Item label="Gà" value="Gà" />
-                <Picker.Item label="Heo" value="Heo" />
-            </Picker>
+            <View style={styles.filterContainer}>
+                <Text style={styles.filterLabel}>Lọc theo đối tượng chăn nuôi</Text>
+                <Picker
+                    selectedValue={selectedType}
+                    style={styles.picker}
+                    onValueChange={(itemValue) => setSelectedType(itemValue)}
+                >
+                    <Picker.Item label="Tất cả " value="" />
+                    <Picker.Item label="Bò" value="Bò" />
+                    <Picker.Item label="Gà" value="Gà" />
+                    <Picker.Item label="Heo" value="Heo" />
+                    <Picker.Item label="Dê" value="Dê" />
+                    <Picker.Item label="Cá" value="Cá" />
+                </Picker>
+            </View>
             {loading ? <ActivityIndicator size="large" /> : renderIndependentResults()}
             <ImageViewing images={images} visible={visible} onRequestClose={handleImageViewingClose} />
         </SafeAreaView>
@@ -209,6 +219,21 @@ const styles = StyleSheet.create({
         flex: 1,
         marginLeft: 10,
         fontSize: 16,
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 10,
+        marginBottom: 10,
+    },
+    filterLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    picker: {
+        flex: 1,
+        marginLeft: 10,
     },
     productContainer: {
         flex: 1,

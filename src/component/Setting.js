@@ -83,7 +83,7 @@ const Setting = ({ navigation, route }) => {
             <View style={{ flex: 2, backgroundColor: '#FAF5FF' }}>
                 <View style={styles.user}>
                     <View style={{ marginLeft: 15 }}>
-                        <Text style={styles.name}>{user?.displayName || 'Tên người dùng'}</Text>
+                        <Text style={styles.name}>{user?.name ? user?.name : user?.displayName || 'Tên người dùng'}</Text>
                         <Text style={[styles.name, { fontSize: 17, fontWeight: 400 }]}>{user?.email || 'Email'}</Text>
                     </View>
                     <View style={{ borderRadius: 100, borderWidth: 6, borderColor: '#fff', alignItems: 'center' }}>

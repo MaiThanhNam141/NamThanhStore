@@ -144,7 +144,7 @@ const ProfileScreen = ({ navigation }) => {
             <Image source={{ uri: user?.photoURL || 'https://www.transparentpng.com/download/user/gray-user-profile-icon-png-fP8Q1P.png' }} style={styles.avatar} />
             <MaterialIcons name="edit" size={28} color="#0f0f0f" style={{ position: 'absolute', right: 0, top: 0 }} />
           </TouchableOpacity>
-          <Text style={styles.name}>{user?.displayName || 'Tên người dùng'}</Text>
+          <Text style={styles.name}>{user?.name ? user?.name : user?.displayName || 'Tên người dùng'}</Text>
         </View>
         <View style={styles.uilities}>
           <View style={styles.uilitiesRow}>
