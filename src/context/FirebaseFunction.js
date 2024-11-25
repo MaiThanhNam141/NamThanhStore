@@ -96,3 +96,16 @@ export const updateRateProduct = (rate, rateCount, id) => {
         console.error("Error update order: ", error);
     }
 }
+
+export const feedbackOrder = async ( id, rate, comment ) => {
+    try {
+        await firestore().collection('orders').doc(id).update({
+            rate,
+            comment,
+        });
+        return true;
+    } catch (error) {
+        console.error("Error update order: ", error);
+        return false;
+    }
+}

@@ -5,6 +5,7 @@ import firestore from '@react-native-firebase/firestore';
 import { getCurrentUser } from '../context/FirebaseFunction';
 import LoadingScreen from '../data/LoadingScreen';
 import { useNavigation } from '@react-navigation/native';
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -28,7 +29,7 @@ const translateStatus = (status) => {
 const OrderList = ({ route }) => {
     const { orders } = route.params;
     const navigation = useNavigation();
-    
+
     return (
         <View style={styles.container}>
             <FlatList
@@ -43,7 +44,12 @@ const OrderList = ({ route }) => {
                         </Text>
                     </TouchableOpacity>
                 )}
-                ListEmptyComponent={<Text>Không có đơn hàng nào cả</Text>}
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <MaterialIcons name="remove-shopping-cart" size={50} color="red" />
+                        <Text style={styles.emptyText}>Bạn không có đơn hàng nào ở đây cả</Text>
+                    </View>
+                }
             />
         </View>
     );
@@ -107,7 +113,7 @@ const OrderedPanel = () => {
             />
             <Tab.Screen
                 name="Đang giao hàng"
-                component={OrderList}
+                component={OrderList}o
                 initialParams={{ orders: filterOrdersByStatus('Shipping') }}
             />
             <Tab.Screen
@@ -130,14 +136,15 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 10,
+        backgroundColor: '#f5fff1'
     },
     orderItem: {
-        padding: 10,
+        padding: 15,
         marginVertical: 5,
         borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        backgroundColor: '#f9f9f9',
+        borderColor: '#f4d3ff',
+        borderRadius: 10,
+        backgroundColor: '#b8ffa0',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
@@ -148,4 +155,15 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#555',
     },
+    emptyContainer:{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyText:{
+        color:"#000",
+        fontSize: 18,
+        marginTop: 20,
+        textAlign:'center'
+    }
 });
