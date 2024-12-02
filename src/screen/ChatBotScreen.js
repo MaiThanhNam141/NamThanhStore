@@ -1,4 +1,4 @@
-import { Switch, Text, View, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, FlatList, Image, KeyboardAvoidingView, ToastAndroid, Keyboard } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet, FlatList, Image, KeyboardAvoidingView, ToastAndroid, Keyboard } from "react-native";
 import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { GoogleGenerativeAI } from "@google/generative-ai";

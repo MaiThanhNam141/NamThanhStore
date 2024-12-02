@@ -57,7 +57,6 @@ export const fetchItemsCheckout = async (selectedItems) => {
         return items
     } catch (error) {
         console.error("Fetch items checkout error: ", error);
-        ToastAndroid.show("Không thể lấy thông tin sản phẩm", ToastAndroid.SHORT);
     }
 };
 
