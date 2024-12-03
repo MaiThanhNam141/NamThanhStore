@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "140469949329",
+    "firebase_url": "https://namthanhstores-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "namthanhstores",
     "storage_bucket": "namthanhstores.appspot.com"
   },
@@ -13,6 +14,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "140469949329-6dvm90starp5mavj3h1vvvtgfe7eggjv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.namthanhstore",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "140469949329-ocqo83msrs2irf2utgl0td791b1tfep5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.namthanhstore",
+            "certificate_hash": "b53f5e875333b1efff416568c74e4ab5c924ac67"
+          }
+        },
         {
           "client_id": "140469949329-le91qjaso1i8sj24649bb9qc7ld6h5eh.apps.googleusercontent.com",
           "client_type": 3

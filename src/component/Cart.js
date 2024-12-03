@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity, FlatList, Image, Animated, Easing } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, FlatList, Image, Animated, Easing, Modal, TextInput } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import { CartContext } from '../context/CartContext';
 import { PanGestureHandler } from 'react-native-gesture-handler';
@@ -8,6 +8,8 @@ import { emptyCart } from '../data/AssetsRef';
 const Cart = ({ navigation }) => {
     const { cartCount, cartItems, removeItemFromCart, clearCart, addItemToCart, subtractItemsFromCart } = useContext(CartContext);
     const [selectedItems, setSelectedItems] = useState([]);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const translateX = useRef(
         cartItems.map(() => new Animated.Value(0))
@@ -68,7 +70,7 @@ const Cart = ({ navigation }) => {
             setSelectedItems(selectedItems.filter(selectedItem => selectedItem.id !== item.id));
         } else {
             // Nếu sản phẩm chưa có trong danh sách được chọn, thêm vào với số lượng hiện tại
-            setSelectedItems([...selectedItems, { id: item.id, itemCount: item.quantity }]);
+            setSelectedItems([...selectedItems, { id: item.id, itemCount: item.quantity, name: item.name, image: item.image }]);
         }
     };
 
@@ -92,6 +94,21 @@ const Cart = ({ navigation }) => {
         navigation.navigate("payment", { selectedItems, totalPrice, totalQuantity })
     }
 
+    const handleModalInput = (item) => {
+        setSelectedItem(item);
+        setModalVisible(true);
+    }
+
+    const handleChangeQuantity = (quantity) => {
+        setSelectedItems(
+            selectedItems.map((si) => {
+                if (si.id === selectedItem) {
+                    return { ...si, itemCount: quantity };
+                }
+            }
+        ))
+    }
+
     const renderItem = ({ item, index }) => {
         return (
             <PanGestureHandler
@@ -111,7 +128,9 @@ const Cart = ({ navigation }) => {
                             <TouchableOpacity onPress={() => handleDecreaseQuantity(item)} style={styles.quantityButton}>
                                 <Text style={{ fontSize: 16, color: '#f7f7f7' }}>-</Text>
                             </TouchableOpacity>
-                            <Text style={{ fontWeight: 'semibold', fontSize: 16 }}>{item.quantity}</Text>
+                            <TouchableOpacity onPress={() => handleModalInput(item.id)}>
+                                <Text style={{ fontWeight: 'semibold', fontSize: 16 }}>{item.quantity}</Text>
+                            </TouchableOpacity>
                             <TouchableOpacity onPress={() => handleIncreaseQuantity(item)} style={styles.quantityButton}>
                                 <Text style={{ fontSize: 16, color: '#f7f7f7' }}>+</Text>
                             </TouchableOpacity>
@@ -166,7 +185,23 @@ const Cart = ({ navigation }) => {
                     </View>
                 )
             }
-
+            <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+                <View style={{ flex: 1, backgroundColor: 'rga(0,0,0,0.2)', justifyContent: 'center', alignItems: 'center' }}>
+                    <View style={{ width: 200, height: 120, backgroundColor: 'white', borderRadius: 10, padding: 10, alignItems:'center' }}>
+                        <Text style={styles.title}>Số lượng</Text>
+                        <TextInput
+                            value={selectedItems.find(si => si.id === selectedItem).quantity}
+                            onChangeText={handleChangeQuantity}
+                            style={{ height: 40, borderColor: 'gray' }}
+                            numberOfLines={1}
+                            keyboardType='numeric'
+                        />
+                        <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.totalPriceCardCheckout, { borderColor: 'red' }]}>
+                            <Text style={{ color: ' white', fontSize: 20 }}>Đóng</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };

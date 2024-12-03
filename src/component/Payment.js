@@ -14,7 +14,7 @@ const Payment = ({ navigation, route }) => {
 
     const shippingFee = paymentMethod === 'cash' ? 10000 : 0;
     const totalAmount = totalPrice + shippingFee;
-
+    
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -75,8 +75,6 @@ const Payment = ({ navigation, route }) => {
 
         try {
             setLoading(true);
-
-            // Replace with the actual URL of your Firebase Cloud Function
             const firebaseFunctionURL = 'https://us-central1-namthanhstores.cloudfunctions.net/createPayment';
 
             const paymentData = {
@@ -86,7 +84,7 @@ const Payment = ({ navigation, route }) => {
                 address: user.address,
                 name: user?.name || user.displayName,
                 phone: user.phone,
-                note: note,
+                note: note || 'Không có ghi chú',
                 location: user?.location,
                 userid: getCurrentUser().uid,
             };
@@ -100,13 +98,12 @@ const Payment = ({ navigation, route }) => {
             });
 
             const responseData = await response.json();
-
+            
             if (response.ok && responseData?.order_url) {
-                console.log(responseData?.order_url);
                 Linking.openURL(responseData.order_url);
                 navigation.navigate('paymentcallback', { app_trans_id: responseData.app_trans_id })
             } else {
-                console.error("Error creating payment:", responseData.message);
+                console.error("Error creating payment:", responseData);
                 ToastAndroid.show("Không thể tạo đơn hàng. Vui lòng thử lại!", ToastAndroid.SHORT);
             }
         } catch (error) {
@@ -123,8 +120,8 @@ const Payment = ({ navigation, route }) => {
             const selectedItem = selectedItems.find(si => si.id === item.id);
             return selectedItem ? (
                 <View style={styles.itemRow} key={item.id}>
-                    <Image source={{ uri: item.image }} style={styles.itemImage} />
-                    <Text style={[styles.itemText, { flex: 3, marginHorizontal: 5, textAlign: 'justify' }]}>{item.name}</Text>
+                    <Image source={{ uri: selectedItem.image }} style={styles.itemImage} />
+                    <Text style={[styles.itemText, { flex: 3, marginHorizontal: 5, textAlign: 'justify' }]}>{selectedItem.name}</Text>
                     <Text style={[styles.itemText, { flex: 1, marginHorizontal: 5, fontSize: 13, textAlign: 'right' }]}>x <Text style={{ fontWeight: 'bold' }}>{selectedItem.itemCount}</Text></Text>
                 </View>
             ) : null;
@@ -145,7 +142,7 @@ const Payment = ({ navigation, route }) => {
                         <Text style={styles.title}>Địa chỉ giao hàng</Text>
                         <View style={{ flexDirection: 'row' }}>
                             <Text>{user?.name || user?.displayName || "Tên người dùng"}</Text>
-                            <Text>{`| ${user?.phone || 'Chưa có số điện thoại'}`}</Text>
+                            <Text>{` | ${user?.phone || 'Chưa có số điện thoại'}`}</Text>
                         </View>
                         <TouchableOpacity style={styles.addressArea} onPress={() => navigation.navigate("userinfo", { user: user, onRefresh: onRefresh })}>
                             <Text>{user?.address || "Chưa có thông tin về địa chỉ"} </Text>

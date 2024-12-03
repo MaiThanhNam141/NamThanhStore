@@ -24,7 +24,7 @@ const BottomTabNavigation = () => {
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
           backgroundColor: "#DEFFD3",
-          height: 49,
+          height: 45,
         },
       }}
     >

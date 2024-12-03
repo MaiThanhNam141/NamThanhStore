@@ -89,7 +89,7 @@ exports.paymentCallback = functions.https.onRequest((req, res) => {
             const sendEmailPromise = fetch("https://script.google.com/macros/s/AKfycbxtGHV6R0XAWI02Rlu3McVzK9SC7gNAce6jtZBOCtk4CFg_pXz5VO3qQPHCeM4BPWXO/exec", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: embedData.email }),
+                body: JSON.stringify({ email: embedData.email, item: JSON.parse(dataJson.item), amount: dataJson.amount }),
             });
             const sendNotificationPromise = fetch("https://us-central1-namthanhstores.cloudfunctions.net/sendNotification", {
                 method: 'POST',
