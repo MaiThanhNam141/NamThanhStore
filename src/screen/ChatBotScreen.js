@@ -9,7 +9,6 @@ import { Product } from "../data/Product";
 import Sound from 'react-native-sound';
 import { getCurrentUser } from "../context/FirebaseFunction";
 import database from '@react-native-firebase/database';
-import Sound from 'react-native-sound';
 
 const ChatBotScreen = () => {
     const [enableTextToSpeech, setEnableTextToSpeech] = useState(false);
@@ -120,8 +119,10 @@ const ChatBotScreen = () => {
     };
 
     const playSendSound = async () => {
+        console.log('try');
+        
         try {
-            const sound = new Sound(effect, Sound.MAIN_BUNDLE, (error) => {
+            const sound = new Sound(effect, (error) => {
                 if (error) {
                     console.error('Error loading sound:', error);
                     return;
