@@ -3,12 +3,13 @@ import React, { useState, useRef, useMemo, useCallback, useEffect } from "react"
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { process } from 'react-native-dotenv';
-import { logo, AIImage } from "../data/AssetsRef";
+import { logo, AIImage, effect } from "../data/AssetsRef";
 import { Nutrition } from "../data/Nutrition";
 import { Product } from "../data/Product";
 import Sound from 'react-native-sound';
 import { getCurrentUser } from "../context/FirebaseFunction";
 import database from '@react-native-firebase/database';
+import Sound from 'react-native-sound';
 
 const ChatBotScreen = () => {
     const [enableTextToSpeech, setEnableTextToSpeech] = useState(false);
@@ -37,7 +38,7 @@ const ChatBotScreen = () => {
                 setMessages(formattedMessages);
             }
         });
-    
+
         // Clean up listener on unmount
         return () => messagesRef.off('value', onValueChange);
     }, []);
@@ -118,6 +119,25 @@ const ChatBotScreen = () => {
         }
     };
 
+    const playSendSound = async () => {
+        try {
+            const sound = new Sound(effect, Sound.MAIN_BUNDLE, (error) => {
+                if (error) {
+                    console.error('Error loading sound:', error);
+                    return;
+                }
+                sound.play((success) => {
+                    if (!success) {
+                        console.error('Playback failed due to audio decoding errors');
+                    }
+                    sound.release();
+                });
+            });
+        } catch (error) {
+            console.error('Error playing sound:', error);
+        }
+    };
+
     const handleGenerateContent = async (message) => {
         try {
             setLoadingResponse(true);
@@ -153,6 +173,7 @@ const ChatBotScreen = () => {
 
     const sendMessage = async () => {
         Keyboard.dismiss();
+        playSendSound();
         if (newMessage.trim().length < 5)
             return ToastAndroid.show("Tin nhắn quá ngắn!", ToastAndroid.SHORT);
         try {
@@ -176,7 +197,7 @@ const ChatBotScreen = () => {
     const handleChangeSupport = async () => {
         try {
             setIsHumanSupport(!isHumanSupport);
-    
+
             if (!user) {
                 ToastAndroid.show("Hãy đăng nhập để sử dụng tính năng này", ToastAndroid.SHORT);
                 return;
@@ -185,12 +206,12 @@ const ChatBotScreen = () => {
                 const conversationRef = database().ref(`conversations/${user.uid}`);
                 ToastAndroid.show("Đang gửi yêu cầu hỗ trợ, vui lòng chờ...", ToastAndroid.SHORT);
                 console.log(conversationRef);
-                
+
                 await conversationRef.set({
                     customerName: user.displayName || "Người dùng ẩn danh",
                     messages,
                 });
-    
+
                 ToastAndroid.show("Yêu cầu hỗ trợ đã được gửi.", ToastAndroid.SHORT);
             } else {
                 ToastAndroid.show("Đã chuyển về chế độ chatbot.", ToastAndroid.SHORT);
@@ -213,7 +234,7 @@ const ChatBotScreen = () => {
             <View style={styles.title}>
                 <Image source={logo} style={styles.titleAvatar}></Image>
                 <Text style={{ fontSize: 8, color: '#6F6F6F', textAlign: 'center' }}>NamThanhStores ChatBot có thể mắc sai sót, vì vậy, hãy xác minh lại các câu trả lời trước khi hoàn toàn tin tưởng</Text>
-                <View style={{ flexDirection: 'row', justifyContent:" space-between", width: '100%', paddingVertical: 5, marginVertical: 1 }}>
+                <View style={{ flexDirection: 'row', justifyContent: " space-between", width: '100%', paddingVertical: 5, marginVertical: 1 }}>
                     <Text>Chuyển sang người thật hỗ trợ</Text>
                     <Switch
                         trackColor={{ false: "#767577", true: "#B4F0A0" }}

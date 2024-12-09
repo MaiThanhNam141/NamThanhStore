@@ -18,8 +18,23 @@ const config = {
 
 // Tạo đơn hàng thanh toán
 exports.createPayment = functions.https.onRequest(async (req, res) => {
-    const { amount, items, email, address, name, note, phone, userid } = req.body;
+    // Cấu hình header CORS
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
 
+    // Xử lý preflight request
+    if (req.method === 'OPTIONS') {
+        return res.status(204).send('');
+    }
+
+    // Chỉ cho phép phương thức POST
+    if (req.method !== 'POST') {
+        return res.status(405).send('Method Not Allowed');
+    }
+    
+    const { amount, items, email, address, name, note, phone, userid } = req.body;
+    
     if (!amount || !items || !email || !address || !name || !phone || !userid) {
         return res.status(500).json({ message: 'Cannot create payment without required information' });
     }

@@ -8,3 +8,5 @@ export const emptyCart = require("../../assets/emptyCart.png");
 export const Preparing = require("../../assets/Preparing.png");
 export const Shipping = require("../../assets/Shipping.png");
 export const Review = require("../../assets/Review.png");
+
+export const effect = require("../../assets/effect.wav");
