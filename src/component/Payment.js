@@ -3,6 +3,7 @@ import { Linking, ScrollView, Text, View, StyleSheet, TouchableOpacity, Alert, T
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { fetchItemsCheckout, getCurrentUser, getUserInfo } from '../context/FirebaseFunction';
 import { Picker } from '@react-native-picker/picker';
+import { playSound } from '../context/playSound';
 
 const Payment = ({ navigation, route }) => {
     const { selectedItems, totalPrice, totalQuantity } = route.params;
@@ -62,6 +63,7 @@ const Payment = ({ navigation, route }) => {
     const handleLogin = () => navigation.navigate('loginscreen');
 
     const handlePayment = async () => {
+        playSound();
         if (!user?.name) {
             if (!user?.displayName) {
                 ToastAndroid.show("Vui lòng cung cấp đầy đủ thông tin trước khi thanh toán!", ToastAndroid.SHORT);
@@ -114,6 +116,10 @@ const Payment = ({ navigation, route }) => {
         }
     };
 
+    const back = () => {
+        playSound();
+        navigation.goBack();
+    }
 
     const renderOrderDetails = () => {
         return itemCheckout?.map((item) => {
@@ -131,7 +137,7 @@ const Payment = ({ navigation, route }) => {
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
+                <TouchableOpacity onPress={back}>
                     <MaterialIcons name="chevron-left" size={30} color="#333" />
                 </TouchableOpacity>
                 <Text style={{ fontWeight: '600', fontSize: 20, color: '#000', marginLeft: 20 }}>Xác nhận đơn hàng</Text>
@@ -144,7 +150,7 @@ const Payment = ({ navigation, route }) => {
                             <Text>{user?.name || user?.displayName || "Tên người dùng"}</Text>
                             <Text>{` | ${user?.phone || 'Chưa có số điện thoại'}`}</Text>
                         </View>
-                        <TouchableOpacity style={styles.addressArea} onPress={() => navigation.navigate("userinfo", { user: user, onRefresh: onRefresh })}>
+                        <TouchableOpacity style={styles.addressArea} onPress={() => navigation.navigate("userinfo", { user: user })}>
                             <Text>{user?.address || "Chưa có thông tin về địa chỉ"} </Text>
                         </TouchableOpacity>
                     </View>

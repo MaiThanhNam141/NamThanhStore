@@ -7,6 +7,7 @@ import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { getCurrentUser } from '../context/FirebaseFunction';
 import { logo } from '../data/AssetsRef';
+import { playSound } from '../context/playSound';
 
 const Login = () => {
     const [email, setEmail] = useState("")
@@ -17,6 +18,7 @@ const Login = () => {
     
     const onGoogleButtonPress = async() => {
         try {
+            playSound();
             setLoading(true);
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
             const { idToken } = await GoogleSignin.signIn();
@@ -55,6 +57,7 @@ const Login = () => {
     }
 
     const signIn = async () => {
+        playSound();
         setLoading(true);
         const e = email.trim();
         const p = password.trim();

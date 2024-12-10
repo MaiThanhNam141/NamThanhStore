@@ -6,6 +6,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import storage from '@react-native-firebase/storage'
 import LinearGradient from 'react-native-linear-gradient';
 import LoadingScreen from '../data/LoadingScreen';
+import { playSound } from '../context/playSound';
 
 const ProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
@@ -36,6 +37,7 @@ const ProfileScreen = ({ navigation }) => {
     setRefresh(true);
   }
   const handleUpload = () => {
+    playSound();
     Alert.alert(
       'Xác nhận',
       'Bạn muốn đổi hình ảnh đại diện?',

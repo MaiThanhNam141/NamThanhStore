@@ -4,6 +4,7 @@ import { CartContext } from '../context/CartContext';
 import firestore from '@react-native-firebase/firestore'
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { loading } from '../data/AssetsRef';
+import { playSound } from '../context/playSound';
 
 const PaymentCallback = ({ navigation, route }) => {
     const { clearCart } = useContext(CartContext);
@@ -33,6 +34,7 @@ const PaymentCallback = ({ navigation, route }) => {
     }, [app_trans_id]);
 
     const goBackHome = () => {
+        playSound();
         navigation.reset({
             index: 0,
             routes: [{ name: 'homescreen' }], // Đặt lại ngăn xếp và đưa màn hình chính lên đầu

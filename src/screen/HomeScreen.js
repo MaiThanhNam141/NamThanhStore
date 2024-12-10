@@ -8,6 +8,7 @@ import firestore from '@react-native-firebase/firestore';
 import { CartContext } from '../context/CartContext';
 import RenderSliderImage from '../component/RenderSliderImage';
 import { getDocumentRef } from '../context/FirebaseFunction';
+import { playSound } from '../context/playSound';
 
 const { width } = Dimensions.get('window');
 
@@ -141,6 +142,7 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleCart = () => {
+    playSound();
     navigation.navigate('cart')
   }
 

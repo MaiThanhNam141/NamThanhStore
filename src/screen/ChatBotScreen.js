@@ -3,12 +3,12 @@ import React, { useState, useRef, useMemo, useCallback, useEffect } from "react"
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { process } from 'react-native-dotenv';
-import { logo, AIImage, effect } from "../data/AssetsRef";
+import { logo, AIImage } from "../data/AssetsRef";
 import { Nutrition } from "../data/Nutrition";
 import { Product } from "../data/Product";
-import Sound from 'react-native-sound';
 import { getCurrentUser } from "../context/FirebaseFunction";
 import database from '@react-native-firebase/database';
+import { playSound } from "../context/playSound";
 
 const ChatBotScreen = () => {
     const [enableTextToSpeech, setEnableTextToSpeech] = useState(false);
@@ -37,10 +37,9 @@ const ChatBotScreen = () => {
                 setMessages(formattedMessages);
             }
         });
-
         // Clean up listener on unmount
         return () => messagesRef.off('value', onValueChange);
-    }, []);
+    }, [user, newMessage]);
 
     useEffect(() => {
         if (!global.isDefaultMessageSent) {
@@ -118,27 +117,6 @@ const ChatBotScreen = () => {
         }
     };
 
-    const playSendSound = async () => {
-        console.log('try');
-        
-        try {
-            const sound = new Sound(effect, (error) => {
-                if (error) {
-                    console.error('Error loading sound:', error);
-                    return;
-                }
-                sound.play((success) => {
-                    if (!success) {
-                        console.error('Playback failed due to audio decoding errors');
-                    }
-                    sound.release();
-                });
-            });
-        } catch (error) {
-            console.error('Error playing sound:', error);
-        }
-    };
-
     const handleGenerateContent = async (message) => {
         try {
             setLoadingResponse(true);
@@ -174,19 +152,19 @@ const ChatBotScreen = () => {
 
     const sendMessage = async () => {
         Keyboard.dismiss();
-        playSendSound();
+        playSound();
         if (newMessage.trim().length < 5)
             return ToastAndroid.show("Tin nhắn quá ngắn!", ToastAndroid.SHORT);
         try {
             const userMessage = { id: Math.random().toString(), text: newMessage, sender: "You", avatar: null, timestamp: Date.now() };
             setMessages(prevMessages => [...prevMessages, userMessage]);
             setNewMessage('');
-            let responde;
+
             if (isHumanSupport) {
                 const messagesRef = database().ref(`conversations/${user.uid}/messages`);
                 messagesRef.push(userMessage);
             } else {
-                responde = await handleGenerateContent(newMessage);
+                const responde = await handleGenerateContent(newMessage);
                 const resMessage = { id: Math.random().toString(), text: responde, sender: 'NamThanhStores Chatbot', avatar: AIImage };
                 setMessages(prevMessages => [...prevMessages, resMessage]);
             }
@@ -206,7 +184,6 @@ const ChatBotScreen = () => {
             if (!isHumanSupport) { // Chuyển sang người thật
                 const conversationRef = database().ref(`conversations/${user.uid}`);
                 ToastAndroid.show("Đang gửi yêu cầu hỗ trợ, vui lòng chờ...", ToastAndroid.SHORT);
-                console.log(conversationRef);
 
                 await conversationRef.set({
                     customerName: user.displayName || "Người dùng ẩn danh",

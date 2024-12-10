@@ -8,6 +8,7 @@ import { Picker } from '@react-native-picker/picker';
 import Province from '../data/Province';
 import { updateUserInfo } from '../context/FirebaseFunction';
 import { GeoPoint } from '@react-native-firebase/firestore';
+import { playSound } from '../context/playSound';
 
 const UserInfo = ({ navigation, route }) => {
   const { user, onRefresh } = route.params;
@@ -18,7 +19,10 @@ const UserInfo = ({ navigation, route }) => {
   const [districtSelected, setDistrictSelected] = useState(user?.address?.split(', ')[2] || "");
   const [wardSelected, setWardSelected] = useState(user?.address?.split(', ')[1] || "");
   const [location, setLocation] = useState(user?.location);
-  const [selectedLocation, setSelectedLocation] = useState(location);
+  const [selectedLocation, setSelectedLocation] = useState(user?.location || {
+    latitude: 10.99306,
+    longitude: 106.65597,
+  });
   const [isMapVisible, setIsMapVisible] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(true);
   const [loadingWards, setLoadingWards] = useState(true);
@@ -63,6 +67,8 @@ const UserInfo = ({ navigation, route }) => {
     Geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        console.log(latitude, longitude);
+
         setLocation({ latitude, longitude });
       },
       (error) => {
@@ -83,6 +89,7 @@ const UserInfo = ({ navigation, route }) => {
   // Hàm hiển thị bản đồ khi nhấn vào nút vị trí
   const handleMapPress = async () => {
     try {
+      playSound();
       const granted = await PermissionsAndroid.check(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
       );
@@ -99,9 +106,14 @@ const UserInfo = ({ navigation, route }) => {
 
   // Hàm xử lý hành động chọn vị trí trên bản đồ
   const handleMapPressOnMap = (event) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    setSelectedLocation({ latitude, longitude });
-    ToastAndroid.show(`Tọa độ chọn: ${latitude}, ${longitude}`, ToastAndroid.SHORT);
+    playSound();
+    const { latitude, longitude } = event.nativeEvent.coordinate || {};
+    if (latitude && longitude) {
+      setSelectedLocation({ latitude, longitude });
+      ToastAndroid.show(`Tọa độ chọn: ${latitude}, ${longitude}`, ToastAndroid.SHORT);
+    } else {
+      ToastAndroid.show("Không thể lấy tọa độ từ vị trí này", ToastAndroid.SHORT);
+    }
   };
 
   // Hàm lấy danh sách quận/huyện
@@ -149,6 +161,7 @@ const UserInfo = ({ navigation, route }) => {
   };
 
   const handleSubmit = async () => {
+    playSound();
     if (!phone || !name || !address || !wardSelected || !districtSelected || !provinceSelected) {
       ToastAndroid.show("Vui lòng điền đầy đủ thông tin", ToastAndroid.SHORT);
       return;
@@ -169,7 +182,6 @@ const UserInfo = ({ navigation, route }) => {
       navigation.goBack();
     } catch (error) {
       console.error("handleSubmit: ", error);
-
     }
   }
 
@@ -222,7 +234,7 @@ const UserInfo = ({ navigation, route }) => {
               enabled={!loadingDistricts}
             >
               <Picker.Item label={loadingDistricts ? "Đang tải..." : "Chọn quận/huyện"} value="" />
-              {districts.map(district => (
+              {districts && districts.map(district => (
                 <Picker.Item key={district.code} label={district.name} value={district.name} />
               ))}
             </Picker>
@@ -236,7 +248,7 @@ const UserInfo = ({ navigation, route }) => {
               enabled={districtSelected !== '' && !loadingWards}
             >
               <Picker.Item label={loadingWards ? "Đang tải..." : "Chọn phường/xã"} value="" />
-              {wards.map(ward => (
+              {wards && wards.map(ward => (
                 <Picker.Item key={ward.code} label={ward.name} value={ward.name} />
               ))}
             </Picker>
@@ -274,15 +286,21 @@ const UserInfo = ({ navigation, route }) => {
               showsMyLocationButton={true}
               style={{ flex: 1 }}
               initialRegion={{
-                latitude: location?.latitude || 11.056270918774537,
-                longitude: location?.longitude || 106.68220577854719,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
+                latitude: location?.latitude || 10.99306,
+                longitude: location?.longitude || 106.65597,
+                latitudeDelta: 0.09,
+                longitudeDelta: 0.04,
               }}
               onPress={handleMapPressOnMap}
             >
               {selectedLocation && (
-                <Marker coordinate={selectedLocation} />
+                <Marker
+                  coordinate={{
+                    longitude: selectedLocation?.longitude ? selectedLocation.longitude : 0,
+                    latitude: selectedLocation?.latitude ? selectedLocation.latitude : 0
+                  }}
+                  title={'owner location'}
+                />
               )}
             </MapView>
             <Button title="Xác nhận vị trí" onPress={() => setIsMapVisible(false)} />

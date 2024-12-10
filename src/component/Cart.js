@@ -4,6 +4,7 @@ import CheckBox from '@react-native-community/checkbox';
 import { CartContext } from '../context/CartContext';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import { emptyCart } from '../data/AssetsRef';
+import { playSound } from '../context/playSound';
 
 const Cart = ({ navigation }) => {
     const { cartCount, cartItems, removeItemFromCart, clearCart, addItemToCart, subtractItemsFromCart } = useContext(CartContext);
@@ -91,8 +92,15 @@ const Cart = ({ navigation }) => {
     }, 0);
 
     const handlePayment = () => {
+        playSound();
         navigation.navigate("payment", { selectedItems, totalPrice, totalQuantity })
     }
+
+    const back = () => {
+        playSound();
+        navigation.goBack();
+    }
+
 
     const handleModalInput = (item) => {
         setSelectedItem(item);
@@ -157,7 +165,7 @@ const Cart = ({ navigation }) => {
                 <View style={{ alignItems: 'center' }}>
                     <Text>Giỏ hàng trống...</Text>
                     <Image source={emptyCart} style={{ height: 150, width: 150 }} />
-                    <TouchableOpacity style={[styles.totalPriceCardCheckout, { marginTop: 20 }]} onPress={() => navigation.goBack()}>
+                    <TouchableOpacity style={[styles.totalPriceCardCheckout, { marginTop: 20 }]} onPress={back}>
                         <Text style={styles.totalPriceCardText}>Tiếp tục mua sắm</Text>
                     </TouchableOpacity>
                 </View>
@@ -190,7 +198,7 @@ const Cart = ({ navigation }) => {
                     <View style={{ width: 200, height: 120, backgroundColor: 'white', borderRadius: 10, padding: 10, alignItems:'center' }}>
                         <Text style={styles.title}>Số lượng</Text>
                         <TextInput
-                            value={selectedItems.find(si => si.id === selectedItem).quantity}
+                            value={selectedItems.find(si => si.id === selectedItem)?.quantity}
                             onChangeText={handleChangeQuantity}
                             style={{ height: 40, borderColor: 'gray' }}
                             numberOfLines={1}

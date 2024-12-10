@@ -4,6 +4,7 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import auth from "@react-native-firebase/auth";
 import { setuserInfo } from '../context/FirebaseFunction';
 import { logo } from '../data/AssetsRef';
+import { playSound } from '../context/playSound';
 
 const Register = () => {
     const [email, setEmail] = useState("")
@@ -14,6 +15,7 @@ const Register = () => {
     const [loading, setLoading] = useState(false);
 
     const signUp = async () => {
+        playSound();
         setLoading(true);
         const e = email.trim();
         const p = password.trim();

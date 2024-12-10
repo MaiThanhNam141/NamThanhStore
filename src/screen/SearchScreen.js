@@ -11,7 +11,7 @@ const SearchScreen = ({ navigation }) => {
     const [titleResults, setTitleResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filteredResults, setFilteredResults] = useState([]);
-    const [selectedType, setSelectedType] = useState('All');
+    const [selectedType, setSelectedType] = useState('a');
     const [refreshing, setRefreshing] = useState(false);
     const [lastVisible, setLastVisible] = useState(null); 
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -108,7 +108,7 @@ const SearchScreen = ({ navigation }) => {
             } else {
                 setTitleResults([...titleResults, ...newResults]);
             }
-
+            
             setLastVisible(lastVisibleDoc);
 
         } catch (error) {

@@ -6,6 +6,7 @@ import LoadingScreen from '../data/LoadingScreen';
 import { updateUserInfo } from '../context/FirebaseFunction';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
+import { playSound } from '../context/playSound';
 
 const Setting = ({ navigation, route }) => {
     const { user, onRefresh } = route.params;
@@ -14,6 +15,7 @@ const Setting = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
 
     const handleSignOut = () => {
+        playSound();
         Alert.alert(
             'Xác nhận',
             'Bạn có chắc chắn muốn đăng xuất không?',
@@ -53,6 +55,7 @@ const Setting = ({ navigation, route }) => {
     }
 
     const handleNotification = () => {
+        playSound();
         try {
             setIsEnabledNotification(!isEnabledNotification);
             updateUserInfo({ notification: !isEnabledNotification });
@@ -63,6 +66,7 @@ const Setting = ({ navigation, route }) => {
     }
 
     const handleAIVoice = () => {
+        playSound();
         try {
             setIsEnabledAIVoice(!isEnabledAIVoice)
             updateUserInfo({ voice: !isEnabledAIVoice });
