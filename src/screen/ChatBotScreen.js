@@ -9,9 +9,11 @@ import { Product } from "../data/Product";
 import { getCurrentUser } from "../context/FirebaseFunction";
 import database from '@react-native-firebase/database';
 import { playSound } from "../context/playSound";
+import LinearGradient from 'react-native-linear-gradient';
+import Sound from 'react-native-sound';
 
 const ChatBotScreen = () => {
-    const [enableTextToSpeech, setEnableTextToSpeech] = useState(false);
+    const [enableTextToSpeech, setEnableTextToSpeech] = useState(true);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loadingResponse, setLoadingResponse] = useState(false);
@@ -67,7 +69,7 @@ const ChatBotScreen = () => {
             const params = new URLSearchParams();
             params.append('input', message);      // Dữ liệu văn bản
             params.append('speaker_id', '4');     // ID người nói
-            params.append('speed', '0.8');        // Tốc độ phát giọng
+            params.append('speed', '1.2');        // Tốc độ phát giọng
 
             // Gửi yêu cầu POST tới API Zalo
             const response = await fetch('https://api.zalo.ai/v1/tts/synthesize', {
@@ -81,7 +83,6 @@ const ChatBotScreen = () => {
 
             const result = await response.json();
             const { error_code, error_message, data } = result;
-            console.log(result);
 
             // Kiểm tra mã lỗi trả về từ API
             if (error_code === 0) {
@@ -91,7 +92,7 @@ const ChatBotScreen = () => {
                 const audioResponse = await fetch(audioUrl, { method: 'GET' });
                 if (audioResponse.ok) {
                     const audioFilePath = audioUrl; // Phát trực tiếp từ URL
-
+                    
                     // Sử dụng Sound để phát âm thanh
                     const sound = new Sound(audioFilePath, null, (error) => {
                         if (error) {
@@ -232,15 +233,18 @@ const ChatBotScreen = () => {
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => {
                     return (
-                        <View style={[styles.messageContainer, isCurrentUser(item.sender) && styles.currentUserMessage]}>
+                        <LinearGradient
+                            colors={isCurrentUser(item.sender) ? ["#dafdfa", "#91faf1"] : ["#ffffff", "#e5c58a"]}
+                            style={[styles.messageContainer, isCurrentUser(item.sender) && styles.currentUserMessage]}
+                        >
                             {!isCurrentUser(item.sender) && (
                                 <View style={styles.senderInfo}>
                                     <Image style={styles.avatar} source={item?.avatar} />
                                     <Text style={styles.senderName}>{item?.sender}</Text>
                                 </View>
                             )}
-                            <Text style={styles.answer}>{item.text}</Text>
-                        </View>
+                            <Text style={[styles.answer, isCurrentUser(item.sender) ? styles.currentUserText : styles.otherUserText]}>{item.text}</Text>
+                        </LinearGradient>
                     );
                 }}
             />
@@ -272,13 +276,11 @@ const styles = StyleSheet.create({
         padding: 10,
         marginHorizontal: 10,
         marginVertical: 5,
-        backgroundColor: '#e0e0e0',
         borderRadius: 10,
         maxWidth: '80%',
     },
     currentUserMessage: {
         alignSelf: 'flex-end',
-        backgroundColor: '#b3e5fc',
     },
     senderInfo: {
         flexDirection: 'row',
@@ -335,5 +337,11 @@ const styles = StyleSheet.create({
     answer: {
         textAlign: 'justify',
         fontSize: 14
-    }
+    },
+    currentUserText: {
+        color: '#25283D',
+    },
+    otherUserText: {
+        color: '#4b7dd7',
+    },
 });
