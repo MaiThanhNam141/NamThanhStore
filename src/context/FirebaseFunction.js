@@ -7,10 +7,15 @@ export const getCurrentUser = () => {
 export const getUserInfo = async () => {
     try {
         const user = getCurrentUser();
-        const userRef = firestore().collection('users').doc(user.uid);
-        if (userRef) {
-            const snapshot = await userRef.get();
-            return snapshot.data();
+        if (user) {
+            const userRef = firestore().collection('users').doc(user.uid);
+            if (userRef) {
+                const snapshot = await userRef.get();
+                return snapshot.data();
+            }
+        }
+        else {
+            throw new Error("No user is currently logged in.");
         }
     } catch (error) {
         console.error("Firebase getUserInfo: ", error);
@@ -28,6 +33,7 @@ export const getDocumentRef = async (collectionName) => {
 export const setuserInfo = (userDocData) => {
     try {
         const user = getCurrentUser();
+        if (!user) throw new Error("No user is currently logged in.");
         const userRef = firestore().collection('users').doc(user.uid);
         userRef.set(userDocData);
     } catch (error) {
@@ -41,7 +47,7 @@ export const updateUserInfo = (userDocData) => {
         const userRef = firestore().collection('users').doc(user.uid);
         userRef.update(userDocData);
     } catch (error) {
-        console.error("Firebase setUserInfo: ", error);
+        console.error("Firebase updateUserInfo: ", error);
     }
 }
 

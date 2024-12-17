@@ -5,63 +5,79 @@ import BottomTabNavigation from './src/navigation/BottomTabNavagition';
 import { UserProvider } from './src/context/UserContext';
 import { CartProvider } from './src/context/CartContext';
 import messaging from '@react-native-firebase/messaging';
-import { updateUserInfo } from './src/context/FirebaseFunction';
+import { getCurrentUser, updateUserInfo } from './src/context/FirebaseFunction';
 
 const App = () => {
 
   useEffect(() => {
     const requestPermission = async () => {
-      PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-      const authStatus = await messaging().requestPermission();
-      const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-      if (enabled) {
-        console.log('Authorization status:', authStatus);
-        const token = await messaging().getToken();
-        updateUserInfo({ token: token });
-        messaging().subscribeToTopic('all_users');
-      } else {
-        ToastAndroid.show("Không thể gửi thông báo nếu bạn không cấp quyền", ToastAndroid.SHORT);
-        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+      const isUserLoggedIn = getCurrentUser();
+      if (!isUserLoggedIn) {
+        console.warn("Người dùng chưa đăng nhập, không thể tiếp tục.");
+        return;
+      }
+  
+      if (Platform.OS === 'android' && Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          ToastAndroid.show("Bạn cần cấp quyền để nhận thông báo", ToastAndroid.SHORT);
+          return;
+        }
+      }
+  
+      try {
         const authStatus = await messaging().requestPermission();
         const enabled =
           authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
           authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  
         if (enabled) {
           console.log('Authorization status:', authStatus);
           const token = await messaging().getToken();
           updateUserInfo({ token: token });
           messaging().subscribeToTopic('all_users');
+        } else {
+          ToastAndroid.show("Không thể gửi thông báo nếu bạn không cấp quyền", ToastAndroid.SHORT);
         }
+      } catch (error) {
+        console.error("Error requesting notification permission:", error);
       }
     };
-
+  
     requestPermission();
-
-    // Trạng thái Foreground
+  
     const foreground = messaging().onMessage(async remoteMessage => {
-      console.log('Received a foreground message:', remoteMessage);
+      try {
+        console.log('Received a foreground message:', remoteMessage);
+      } catch (error) {
+        console.error("Error handling foreground message:", error);
+      }
     });
-
-    // Trạng thái Background
+  
     const unsubscribeOnNotificationOpenedApp = messaging().onNotificationOpenedApp(remoteMessage => {
-      console.log('Notification opened from background state:', remoteMessage);
+      try {
+        console.log('Notification opened from background state:', remoteMessage);
+      } catch (error) {
+        console.error("Error handling background notification:", error);
+      }
     });
-
-    // Trạng thái Quit
+  
     messaging().getInitialNotification().then(remoteMessage => {
       if (remoteMessage) {
-        console.log('Notification opened from quit state:', remoteMessage);
+        try {
+          console.log('Notification opened from quit state:', remoteMessage);
+        } catch (error) {
+          console.error("Error handling quit state notification:", error);
+        }
       }
     });
-
+  
     return () => {
-      foreground();
-      unsubscribeOnNotificationOpenedApp();
+      if (foreground) foreground();
+      if (unsubscribeOnNotificationOpenedApp) unsubscribeOnNotificationOpenedApp();
     };
   }, []);
+  
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

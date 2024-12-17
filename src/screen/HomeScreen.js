@@ -57,20 +57,20 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     Promise.all([
-      fetchPosts(),
+      fetchProducts(),
       fetchSliderImages()
     ])
   }, []);
 
   useEffect(() => {
     if (refreshing) {
-      fetchPosts();
+      fetchProducts();
     }
   }, [refreshing]);
 
   const handleScroll = () => {
     if (!loading && lastDoc) {
-      fetchPosts();
+      fetchProducts();
     }
   };
 
@@ -160,7 +160,7 @@ const HomeScreen = ({ navigation }) => {
     }
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchProducts = async () => {
     try {
       if (loading) return;
       setLoading(true);
@@ -171,11 +171,12 @@ const HomeScreen = ({ navigation }) => {
       }
 
       const productFood = await query.get();
-
+      
       const newProduct = productFood.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
         .filter((newP) => !product.some((existingProduct) => existingProduct.id === newP.id));
-
+      console.log(newProduct);
+      
       setProduct((prevProducts) => [...prevProducts, ...newProduct]);
       setLastDoc(productFood.docs[productFood.docs.length - 1]);
 

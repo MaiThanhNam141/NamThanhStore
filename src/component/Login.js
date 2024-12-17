@@ -28,9 +28,9 @@ const Login = () => {
             const user = getCurrentUser();
             if (user) {
                 const userRef = firestore().collection('users').doc(user.uid);
-                const userDoc = userRef.get();
+                const userDoc = await userRef.get();
                 
-                if (!userDoc) {
+                if (!userDoc.exists) {
                     const userDocData = {
                         email: user.email,
                         displayName: user.displayName,

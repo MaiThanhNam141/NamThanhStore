@@ -102,7 +102,8 @@ const SearchScreen = ({ navigation }) => {
             const titleSnapshot = await ref.get();
             const newResults = titleSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
             const lastVisibleDoc = titleSnapshot.docs[titleSnapshot.docs.length - 1];
-
+            console.log(newResults);
+            
             if (isNewSearch) {
                 setTitleResults(newResults);
             } else {
