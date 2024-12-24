@@ -29,7 +29,7 @@ const HomeScreen = ({ navigation }) => {
   const [sliderImages, setSliderImages] = useState({ imageUrls: [], links: [] });
   const [isSliderVisible, setIsSliderVisible] = useState(true);
   const [height, setHeight] = useState(200);
-  
+
   const { addItemToCart, cartCount } = useContext(CartContext);
 
   const [scrollY] = useState(new Animated.Value(0));
@@ -160,37 +160,65 @@ const HomeScreen = ({ navigation }) => {
     }
   }, []);
 
+  // const fetchProducts = async () => {
+  //   try {
+  //     if (loading) return;
+  //     setLoading(true);
+  //     const productRef = firestore().collection('productFood');
+  //     let query = productRef.limit(6);
+  //     if (lastDoc) {
+  //       query = query.startAfter(lastDoc);
+  //     }
+
+  //     const productFood = await query.get();
+
+  //     const newProduct = productFood.docs
+  //       .map((doc) => ({ id: doc.id, ...doc.data() }))
+  //       .filter((newP) => !product.some((existingProduct) => existingProduct.id === newP.id));
+  //     console.log('Home fecth: ', newProduct);
+
+  //     setProduct((prevProducts) => [...prevProducts, ...newProduct]);
+  //     setLastDoc(productFood.docs[productFood.docs.length - 1]);
+
+  //     if (initialLoading) {
+  //       setInitialLoading(false);
+  //     }
+
+  //   } catch (error) {
+  //     console.error(error);
+  //   } finally {
+  //     setRefreshing(false);
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchProducts = async () => {
     try {
-      if (loading) return;
-      setLoading(true);
+      console.log('Fetching products...');
       const productRef = firestore().collection('productFood');
-      let query = productRef.limit(6);
-      if (lastDoc) {
-        query = query.startAfter(lastDoc);
+      console.log('Collection path:', productRef._collectionPath._parts.join('/'));
+
+
+      const productFood = await productRef.get();
+      console.log('Raw docs:', productFood.docs);
+
+      if (productFood.empty) {
+        console.log('No documents found in productFood collection.');
+        return;
       }
 
-      const productFood = await query.get();
-      
-      const newProduct = productFood.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((newP) => !product.some((existingProduct) => existingProduct.id === newP.id));
-      console.log(newProduct);
-      
-      setProduct((prevProducts) => [...prevProducts, ...newProduct]);
-      setLastDoc(productFood.docs[productFood.docs.length - 1]);
+      const newProduct = productFood.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log('Fetched products:', newProduct);
 
-      if (initialLoading) {
-        setInitialLoading(false);
-      }
-
+      setProduct(newProduct);
     } catch (error) {
-      console.error(error);
-    } finally {
-      setRefreshing(false);
-      setLoading(false);
+      console.error('Error fetching products:', error);
     }
   };
+
 
   const handleDetailScreen = (item) => {
     navigation.navigate('detail', { selectedItem: item })

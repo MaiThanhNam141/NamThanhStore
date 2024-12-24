@@ -8,29 +8,22 @@ import messaging from '@react-native-firebase/messaging';
 import { getCurrentUser, updateUserInfo } from './src/context/FirebaseFunction';
 
 const App = () => {
+  const [loggedIn, setLoggedIn] = React.useState(false);
 
   useEffect(() => {
     const requestPermission = async () => {
-      const isUserLoggedIn = getCurrentUser();
-      if (!isUserLoggedIn) {
-        console.warn("Người dùng chưa đăng nhập, không thể tiếp tục.");
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        ToastAndroid.show("Bạn cần cấp quyền để nhận thông báo", ToastAndroid.SHORT);
         return;
       }
-  
-      if (Platform.OS === 'android' && Platform.Version >= 33) {
-        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          ToastAndroid.show("Bạn cần cấp quyền để nhận thông báo", ToastAndroid.SHORT);
-          return;
-        }
-      }
-  
+
       try {
         const authStatus = await messaging().requestPermission();
         const enabled =
           authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
           authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-  
+
         if (enabled) {
           console.log('Authorization status:', authStatus);
           const token = await messaging().getToken();
@@ -43,9 +36,9 @@ const App = () => {
         console.error("Error requesting notification permission:", error);
       }
     };
-  
+
     requestPermission();
-  
+
     const foreground = messaging().onMessage(async remoteMessage => {
       try {
         console.log('Received a foreground message:', remoteMessage);
@@ -53,7 +46,7 @@ const App = () => {
         console.error("Error handling foreground message:", error);
       }
     });
-  
+
     const unsubscribeOnNotificationOpenedApp = messaging().onNotificationOpenedApp(remoteMessage => {
       try {
         console.log('Notification opened from background state:', remoteMessage);
@@ -61,7 +54,7 @@ const App = () => {
         console.error("Error handling background notification:", error);
       }
     });
-  
+
     messaging().getInitialNotification().then(remoteMessage => {
       if (remoteMessage) {
         try {
@@ -71,13 +64,13 @@ const App = () => {
         }
       }
     });
-  
+
     return () => {
       if (foreground) foreground();
       if (unsubscribeOnNotificationOpenedApp) unsubscribeOnNotificationOpenedApp();
     };
-  }, []);
-  
+  }, [loggedIn]);
+
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

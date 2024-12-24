@@ -17,8 +17,8 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     
     const onGoogleButtonPress = async() => {
+        playSound();
         try {
-            playSound();
             setLoading(true);
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
             const { idToken } = await GoogleSignin.signIn();

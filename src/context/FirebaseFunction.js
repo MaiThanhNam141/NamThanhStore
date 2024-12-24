@@ -44,7 +44,7 @@ export const setuserInfo = (userDocData) => {
 export const updateUserInfo = (userDocData) => {
     try {
         const user = getCurrentUser();
-        const userRef = firestore().collection('users').doc(user.uid);
+        const userRef = firestore().collection('users').doc(user?.uid);
         userRef.update(userDocData);
     } catch (error) {
         console.error("Firebase updateUserInfo: ", error);
